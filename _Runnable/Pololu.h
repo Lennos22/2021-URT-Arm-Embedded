@@ -3,8 +3,6 @@
 
 #define SERIALPOLSPEED 19200
 
-extern uint8_t testmessage[3];
-
 extern Uart SerialPol;
 
 void setup_PololuUart();

@@ -2,7 +2,7 @@
 #include "Pololu.h"
 #include "CDS92Timers.h"
 
-
+uint8_t testmessage[3];
 
 void setup_USBserial(){
   Serial.begin(9600);
@@ -17,6 +17,12 @@ void setup() {
   //setup_encoder();
   //setup_SPI();
   if(SERIALMONITER) setup_USBserial();
+
+  if(SENDSERIAL){
+    testmessage[0] = 0xAA;
+    testmessage[1] = 0xAB;
+    testmessage[2] = 0xAB;
+  }
 }
 
 void loop() {
@@ -36,7 +42,7 @@ void loop() {
   if(SENDSERIAL){
     SerialPol.write(testmessage, 3);
     SerialPol.flush();
-    delay(1000);
+    delay(2000);
   }
   delay(100);
 
