@@ -26,6 +26,7 @@ void setup() {
 }
 
 void loop() {
+
   if(SERIALMONITER){
     if (SerialPol.available() > 0) {
       delay(100);
@@ -38,14 +39,14 @@ void loop() {
       Serial.println();
     }
   }
-
+  /**
   if(SENDSERIAL){
     SerialPol.write(testmessage, 3);
     SerialPol.flush();
     delay(2000);
   }
   delay(100);
-
+  **/
   // put your main code here, to run repeatedly:
 
   // CYCLICAL 100Hz or higher
@@ -60,4 +61,23 @@ void loop() {
   // Write to CDS SPI
   // Change CDS Frequencies
   // Write to Pololu Uart
+  Serial.print("The temperature is: ");
+  Serial.println(getVariable(TEMPERATURE));
+  Serial.print("The input voltage is: ");
+  Serial.println(getVariable(INPUT_VOLTAGE));
+  delay(1000);
+
+
+  setMotorLimit(BOTH_DIRECT_SPEED, 3200/2);
+  Serial.print("The motor speed limit is: ");
+  Serial.println(getVariable(MAX_FORWARD_SPEED));
+  delay(500);
+  setMotorLimit(FORWARD_SPEED, 3200);
+  Serial.print("The forward motor speed limit is: ");
+  Serial.println(getVariable(MAX_FORWARD_SPEED));
+  delay(500);
+  setMotorLimit(BACKWARD_SPEED, 3200/4);
+  Serial.print("The backward motor speed limit is: ");
+  Serial.println(getVariable(MAX_BACKWARD_SPEED));
+  delay(500);
 }
