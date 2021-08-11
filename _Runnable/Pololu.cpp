@@ -36,4 +36,8 @@ void setup_PololuUart(){
   pinPeripheral(POL_RX_PIN, PIO_SERCOM_ALT);
 }
 
+void exitSafeStart() {
+  SerialPol.write(0x86);
+}
+
 #endif
