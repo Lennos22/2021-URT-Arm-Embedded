@@ -3,7 +3,11 @@
 
 #define SERIALPOLSPEED 19200
 
-// Variable IDs
+/******************************** Device Names ********************************/
+#define DEFAULT_NAME 13
+
+/******************************** Variable IDs *********************************
+*******************************************************************************/
 #define ERROR_STATUS 0
 /**
 The set bits of this variable indicate the errors that are currently stopping the motor.
@@ -56,23 +60,37 @@ deceleration, or brake duration limits.
 • Bit 8: AN2 limit/kill switch is active (scaled value ≥ 1600).
 • Bit 9: USB kill switch is active.
 • Bits 10-15: reserved */
-#define TARGET_SPEED 20
-#define CURRENT_SPEED 21
-#define BRAKE_AMOUNT 22
-#define INPUT_VOLTAGE 23
-#define TEMPERATURE 24
-#define BAU_RATE_REGISTER 27
-#define MAX_FORWARD_SPEED 30
-#define MAX_FORWARD_ACCEL 31
-#define MAX_FORWARD_DECCEL 32
-#define MAX_FORWARD_BRAKE_DURATION 33
-#define MAX_BACKWARD_SPEED 36
-#define MAX_BACKWARD_ACCEL 37
-#define MAX_BACKWARD_DECCEL 38
-#define MAX_BACKWARD_BRAKE_DURATION 39
+#define TARGET_SPEED 20                 // (-3200,3200)
+#define CURRENT_SPEED 21                // (-3200,3200)
+#define BRAKE_AMOUNT 22                 // (0,32)
+#define INPUT_VOLTAGE 23                // mV
+#define TEMPERATURE 24                  // 0.1'C
+#define BAU_RATE_REGISTER 27            // seconds per 7.2e7. So 7.2e7/vlaue for bps
+#define MAX_FORWARD_SPEED 30            // (0,3200)
+#define MAX_FORWARD_ACCEL 31            // (0,3200)
+#define MAX_FORWARD_DECCEL 32           // (0,3200)
+#define MAX_FORWARD_BRAKE_DURATION 33   // msec
+#define MAX_BACKWARD_SPEED 36           // (0,3200)
+#define MAX_BACKWARD_ACCEL 37           // (0,3200)
+#define MAX_BACKWARD_DECCEL 38          // (0,3200)
+#define MAX_BACKWARD_BRAKE_DURATION 39  // msec
 #define RESET_FLAGS 127
+/**
+Flags indicating the source of the last board reset. This variable does not change
+while the controller is running and is not reported under the Status Tab of the
+Simple Motor Control Center. You can view it in the Device Information window of
+the Control Center, which is available from the Device menu, and for the first two
+seconds after start-up, the yellow status LED flashes a pattern that indicates the
+last reset source (see Section 3.5).
+• 0x04 (4): RST pin pulled low by external source.
+• 0x0C (12): Power reset (VIN got too low or was disconnected).
+• 0x14 (20): Software reset (by firmware upgrade process).
+• 0x24 (38): Watchdog timer reset (should never happen; this could
+indicate a firmware bug). */
 
-/** Motor limit IDs
+/*************************** Motor limit IDs ***********************************
+********************************************************************************
+
 Speeds:           Must be between 0 and 3200 (0 to 100%).
                   Default is 3200
 Accelerations:    Must be between 0 and 3200 (change in speed per update period).
@@ -82,7 +100,6 @@ Deccelerations:   Same as Accelerations.
 Break durations:  Must be between 0 and 16384 in units of 4ms. This value is the
                   time spent braking (at speed 0) when transitioning from
                   reverse to forward (or vice versa).
-
 */
 #define BOTH_DIRECT_SPEED 0
 #define BOTH_DIRECT_ACCEL 1
@@ -96,9 +113,6 @@ Break durations:  Must be between 0 and 16384 in units of 4ms. This value is the
 #define BACKWARD_ACCEL 9
 #define BACKWARD_DECCEL 10
 #define BACKWARD_BRAKE_DURATION 11
-
-// Device Names
-#define DEFAULT_NAME 13
 
 extern Uart SerialPol;
 
@@ -138,9 +152,4 @@ unsigned char setMotorLimit(int deviceNumber, unsigned char limitID, unsigned in
 // section of Polou.h for the different ID's and potential values.
 unsigned int getVariable(int deviceNumber, unsigned char variableID);
 
-
-/**
-Other things to note about the Pololu Simple Motor Controller:
-
-*/
 #endif

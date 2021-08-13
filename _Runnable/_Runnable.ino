@@ -66,14 +66,11 @@ void loop() {
   // Write to CDS SPI
   // Change CDS Frequencies
   // Write to Pololu Uart
-  Serial.print("The temperature is: ");
+  /** Serial.print("The temperature is: ");
   Serial.println(getVariable(DEFAULT_NAME, TEMPERATURE));
   Serial.print("The input voltage is: ");
   Serial.println(getVariable(DEFAULT_NAME, INPUT_VOLTAGE));
   delay(500);
-
-
-
   setMotorLimit(DEFAULT_NAME, BOTH_DIRECT_SPEED, 3200/2);
   Serial.print("The motor speed limit is: ");
   Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
@@ -85,5 +82,13 @@ void loop() {
   setMotorLimit(DEFAULT_NAME, BACKWARD_SPEED, 3200/4);
   Serial.print("The backward motor speed limit is: ");
   Serial.println(getVariable(DEFAULT_NAME, MAX_BACKWARD_SPEED));
-  delay(500);
+  delay(500); */
+
+  Serial.print("The current error status byte is: ");
+  Serial.println(getVariable(DEFAULT_NAME, ERROR_STATUS), BIN);
+  Serial.print("The current limit status byte is: ");
+  Serial.println(getVariable(DEFAULT_NAME, LIMIT_STATUS), BIN);
+  Serial.print("The last reset casue was: ");
+  Serial.println(getVariable(DEFAULT_NAME, RESET_FLAGS));
+  delay(10000);
 }
