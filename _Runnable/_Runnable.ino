@@ -13,7 +13,9 @@ void setup_USBserial(){
 
 void setup() {
   //setup_TCC();
-  setup_PololuUart();
+  int polDeviceNames[1] = {DEFAULT_NAME};
+
+  setup_PololuUart(polDeviceNames, 1);
   //setup_encoder();
   //setup_SPI();
   if(SERIALMONITER) setup_USBserial();
@@ -23,6 +25,9 @@ void setup() {
     testmessage[1] = 0xAB;
     testmessage[2] = 0xAB;
   }
+
+  Serial.print("The default brake duration is:");
+  Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_BRAKE_DURATION));
 }
 
 void loop() {
@@ -62,22 +67,23 @@ void loop() {
   // Change CDS Frequencies
   // Write to Pololu Uart
   Serial.print("The temperature is: ");
-  Serial.println(getVariable(TEMPERATURE));
+  Serial.println(getVariable(DEFAULT_NAME, TEMPERATURE));
   Serial.print("The input voltage is: ");
-  Serial.println(getVariable(INPUT_VOLTAGE));
-  delay(1000);
+  Serial.println(getVariable(DEFAULT_NAME, INPUT_VOLTAGE));
+  delay(500);
 
 
-  setMotorLimit(BOTH_DIRECT_SPEED, 3200/2);
+
+  setMotorLimit(DEFAULT_NAME, BOTH_DIRECT_SPEED, 3200/2);
   Serial.print("The motor speed limit is: ");
-  Serial.println(getVariable(MAX_FORWARD_SPEED));
+  Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
   delay(500);
-  setMotorLimit(FORWARD_SPEED, 3200);
+  setMotorLimit(DEFAULT_NAME, FORWARD_SPEED, 3200);
   Serial.print("The forward motor speed limit is: ");
-  Serial.println(getVariable(MAX_FORWARD_SPEED));
+  Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
   delay(500);
-  setMotorLimit(BACKWARD_SPEED, 3200/4);
+  setMotorLimit(DEFAULT_NAME, BACKWARD_SPEED, 3200/4);
   Serial.print("The backward motor speed limit is: ");
-  Serial.println(getVariable(MAX_BACKWARD_SPEED));
+  Serial.println(getVariable(DEFAULT_NAME, MAX_BACKWARD_SPEED));
   delay(500);
 }
