@@ -36,6 +36,9 @@ void setup_PololuUart(int* deviceNumbers, int numberDevices){
   pinPeripheral(POL_TX_PIN, PIO_SERCOM_ALT);
   pinPeripheral(POL_RX_PIN, PIO_SERCOM_ALT);
 
+  // Assign error reading pin
+  pinMode(POL_ERR_PIN, INPUT);
+
   setPolSerialSpeed();
   exitSafeStartAll(deviceNumbers, numberDevices);
 }
