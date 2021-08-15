@@ -73,6 +73,7 @@ int readByte() {
 // value between -3200 and 3200. With -3200 being full speed reverse, 3200 being
 // full speed forward, and 0 being stopped.
 void setMotorSpeed(int deviceNumber, int speed) {
+  if(speed<-3200 || speed>3200) return;
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
   if(speed < 0) {
@@ -81,8 +82,8 @@ void setMotorSpeed(int deviceNumber, int speed) {
   } else {
     SerialPol.write(0x05); // Forward motor direction
   }
-  SerialPol.write(speed & 0xF1);
-  SerialPol.write(speed >> 5);
+  SerialPol.write((speed & 0xF1));
+  SerialPol.write((speed >> 5) & 0x7F);
 }
 
 // Sets the breaks of motor indicated. The amount is between 0 and 32, with 0 being
@@ -118,7 +119,7 @@ unsigned char setMotorLimit(int deviceNumber, unsigned char limitID, unsigned in
   return readByte();
 }
 
-// Requests the a variable from teh specified motor. See the Variable IDs
+// Requests the a variable from the specified motor. See the Variable IDs
 // section of Polou.h for the different ID's and potential values.
 unsigned int getVariable(int deviceNumber, unsigned char variableID) {
   SerialPol.write(0xAA);
