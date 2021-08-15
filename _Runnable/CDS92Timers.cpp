@@ -92,6 +92,13 @@ void setup_CDSTimer()
 
 }
 
+void setup_CDS_SPI(){
+  SPI.begin();
+  SPI.beginTransaction(SPISettings(10000, MSBFIRST, SPI_MODE0));
+  pinMode(SPI_SS, OUTPUT);
+  digitalWrite(SPI_SS, HIGH);
+}
+
 status_t writeFrequency(uint8_t timer, double frequency){
   uint16_t CC0_val = FREQ_CONVERSION/frequency;
 
@@ -207,12 +214,27 @@ void timer1kztest(){
   //test2
   disableAllTimers();
   writeFrequency(0, 3.0);
-  writeFrequency(1, 3.0);
-  writeFrequency(2, 3.0);
   enableAllTimers();
-  delay(2000);
+  delay(500);
   writeFrequency(1, 5.0); //TIMER 2 ACTIVATES HERE
   writeFrequency(2, 0.5); //TIMER 2 ACTIVATES HERE
+}
+
+void SPItest(){
+  for(int i =0; i<10; i++ ){
+    digitalWrite(SPI_SS, LOW);
+    delay(1);
+    SPI.transfer(0xF0);
+    delay(1);
+    digitalWrite(SPI_SS, HIGH);
+    delay(1000);
+    digitalWrite(SPI_SS, LOW);
+    delay(1);
+    SPI.transfer(0x0F);
+    delay(1);
+    digitalWrite(SPI_SS, HIGH);
+    delay(1000);
+  }
 }
 
 #endif

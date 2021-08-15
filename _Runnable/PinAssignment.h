@@ -6,6 +6,11 @@
 #define TCC10PIN 5
 #define TCC20PIN 4
 
+//CDS92 SPI for Shift Registers
+#define SPI_SCK 25
+#define SPI_MOSI 24
+#define SPI_SS 13
+
 // POLOLU COMMS - SERCOM4 - UART
 #define POL_RX_PIN 17    // pin A3 connects to SMC RX
 #define POL_TX_PIN 16    // pin A2 connects to SMC TX

@@ -13,11 +13,12 @@ void setup_USBserial(){
 
 void setup() {
   setup_CDSTimer();
+  setup_CDS_SPI();
   setup_PololuUart();
   //setup_encoder();
-  //setup_SPI();
   if(SERIALMONITER) setup_USBserial();
   timer1kztest();
+  SPItest();
 }
 
 
