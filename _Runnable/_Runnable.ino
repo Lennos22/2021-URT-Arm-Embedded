@@ -1,6 +1,7 @@
 #include "runnable.h"
 #include "Pololu.h"
 #include "CDS92Timers.h"
+#include "PiSerial.h"
 
 uint8_t testmessage[3];
 
