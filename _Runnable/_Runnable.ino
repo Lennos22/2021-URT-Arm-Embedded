@@ -12,18 +12,15 @@ void setup_USBserial(){
 }
 
 void setup() {
-  //setup_TCC();
+  setup_CDSTimer();
   setup_PololuUart();
   //setup_encoder();
   //setup_SPI();
   if(SERIALMONITER) setup_USBserial();
-
-  if(SENDSERIAL){
-    testmessage[0] = 0xAA;
-    testmessage[1] = 0xAB;
-    testmessage[2] = 0xAB;
-  }
+  timer1kztest();
 }
+
+
 
 void loop() {
   if(SERIALMONITER){
@@ -39,11 +36,6 @@ void loop() {
     }
   }
 
-  if(SENDSERIAL){
-    SerialPol.write(testmessage, 3);
-    SerialPol.flush();
-    delay(2000);
-  }
   delay(100);
 
   // put your main code here, to run repeatedly:
