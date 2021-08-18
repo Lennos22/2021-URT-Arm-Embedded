@@ -121,34 +121,34 @@ void SERCOM4_3_Handler();
 //Initialises the Serial Connection
 void setup_PololuUart(int* deviceNumbers, int numberDevices);
 // Exits saft start mode on the device indicated by device number
-void exitSafeStart(unsigned char deviceNumber);
+void exitSafeStartSMC(unsigned char deviceNumber);
 // Exits safe start for all of the devices in deviceNumbers
-void exitSafeStartAll(int *deviceNumbers, int numberDevices);
+void exitSafeStartAllSMC(int *deviceNumbers, int numberDevices);
 // Sets the serial communication speed in the simple motor controller
-void setPolSerialSpeed();
+void setPolSerialSpeedAll();
 // Reads a byte from the SerialPol, returns -1 if nothing read
-int readByte();
+int readByteAll();
 // Sets the motor speed of device indicated. The speed value is a int with it's
 // value between -3200 and 3200. With -3200 being full speed reverse, 3200 being
 // full speed forward, and 0 being stopped.
-void setMotorSpeed(int deviceNumber, int speed);
+void setMotorSpeedSMC(int deviceNumber, int speed);
 // Sets the breaks of motor indicated. The amount is between 0 and 32, with 0 being
 // a full coast and 32 being full break.
-void setMotorBreak(int deviceNumber, int amount);
+void setMotorBreakSMC(int deviceNumber, int amount);
 // Stops the motor indicated. This does two things: sets the target speed to 0,
 // thereby stopping the motor (respecting set decceleration limits) and puts the
 // device into Safe-Start mode if that is enabled.
-void stopMotor(int deviceNumber);
+void stopMotorSMC(int deviceNumber);
 // Sets limits for the device indicated's motor parameters. See the Motor Limit IDs
 // section of Polou.h for the different ID's and potential values. Returns a integer
 // to signify the sucess: 0 for all good, 1 for unable to set a forward param because
 // of a hard motor limit, 2 for a reverse hard motor limit, and 3 for a forward and
 // reverse hard motor limit.
-unsigned char setMotorLimit(int deviceNumber, unsigned char limitID, unsigned int limitValue);
+unsigned char setMotorLimitSMC(int deviceNumber, unsigned char limitID, unsigned int limitValue);
 // Requests the a variable from teh specified motor. See the Variable IDs
 // section of Polou.h for the different ID's and potential values.
-unsigned int getVariable(int deviceNumber, unsigned char variableID);
-
-void printStatusInformation(int deviceNumber);
+unsigned int getVariableSMC(int deviceNumber, unsigned char variableID);
+// Prints the current status information of the named device.
+void printStatusInformationSMC(int deviceNumber);
 
 #endif

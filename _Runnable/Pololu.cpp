@@ -44,26 +44,26 @@ void setup_PololuUart(int* deviceNumbers, int numberDevices){
 }
 
 // Sets the serial communication speed in the simple motor controller
-void setPolSerialSpeed() {
+void setPolSerialSpeedAll() {
   SerialPol.write(0xAA);
 }
 
 // Exits safe start for all of the devices in deviceNumbers
-void exitSafeStartAll(int *deviceNumbers, int numberDevices) {
+void exitSafeStartAllSMC(int *deviceNumbers, int numberDevices) {
   for(int i = 0; i < numberDevices; i++) {
     exitSafeStart(deviceNumbers[i]);
   }
 }
 
 // Exits saft start mode on the device indicated by device number
-void exitSafeStart(unsigned char deviceNumber) {
+void exitSafeStartSMC(unsigned char deviceNumber) {
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
   SerialPol.write(0x03);
 }
 
 // Reads a byte from the SerialPol, returns -1 if nothing read
-int readByte() {
+int readByteAll() {
   char c;
   if(SerialPol.readBytes(&c, 1) == 0) {return -1;}
   return (byte)c;
@@ -72,7 +72,7 @@ int readByte() {
 // Sets the motor speed of device indicated. The speed value is a int with it's
 // value between -3200 and 3200. With -3200 being full speed reverse, 3200 being
 // full speed forward, and 0 being stopped.
-void setMotorSpeed(int deviceNumber, int speed) {
+void setMotorSpeedSMC(int deviceNumber, int speed) {
   if(speed<-3200 || speed>3200) return;
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
@@ -88,7 +88,7 @@ void setMotorSpeed(int deviceNumber, int speed) {
 
 // Sets the breaks of motor indicated. The amount is between 0 and 32, with 0 being
 // a full coast and 32 being full break.
-void setMotorBreak(int deviceNumber, int amount) {
+void setMotorBreakSMC(int deviceNumber, int amount) {
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
   SerialPol.write(0x12);
@@ -98,7 +98,7 @@ void setMotorBreak(int deviceNumber, int amount) {
 // Stops the motor indicated. This does two things: sets the target speed to 0,
 // thereby stopping the motor (respecting set decceleration limits) and puts the
 // device into Safe-Start mode if that is enabled.
-void stopMotor(int deviceNumber) {
+void stopMotorSMC(int deviceNumber) {
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
   SerialPol.write(0x60);
@@ -109,7 +109,7 @@ void stopMotor(int deviceNumber) {
 // to signify the sucess: 0 for all good, 1 for unable to set a forward param because
 // of a hard motor limit, 2 for a reverse hard motor limit, and 3 for a forward and
 // reverse hard motor limit.
-unsigned char setMotorLimit(int deviceNumber, unsigned char limitID, unsigned int limitValue) {
+unsigned char setMotorLimitSMC(int deviceNumber, unsigned char limitID, unsigned int limitValue) {
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
   SerialPol.write(0x22);
@@ -121,7 +121,7 @@ unsigned char setMotorLimit(int deviceNumber, unsigned char limitID, unsigned in
 
 // Requests the a variable from the specified motor. See the Variable IDs
 // section of Polou.h for the different ID's and potential values.
-unsigned int getVariable(int deviceNumber, unsigned char variableID) {
+unsigned int getVariableSMC(int deviceNumber, unsigned char variableID) {
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
   SerialPol.write(0x21);
@@ -129,7 +129,8 @@ unsigned int getVariable(int deviceNumber, unsigned char variableID) {
   return readByte() + 256*readByte();
 }
 
-void printStatusInformation(int deviceNumber) {
+// Prints the current status information of the named device.
+void printStatusInformationSMC(int deviceNumber) {
   Serial.print("The current error status byte is: ");
   Serial.println(getVariable(deviceNumber, ERROR_STATUS), BIN);
   Serial.print("The current limit status byte is: ");
@@ -138,7 +139,7 @@ void printStatusInformation(int deviceNumber) {
   Serial.println(getVariable(deviceNumber, RESET_FLAGS));
 }
 
-
+void setTargetServo
 
 
 #endif
