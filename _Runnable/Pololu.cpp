@@ -27,8 +27,8 @@ void SERCOM4_3_Handler()
 
 //Initialises the Serial Connection
 void setup_PololuUart(int* deviceNumbers, int numberDevices){
-  //Using Serial 2 via SERCOM 4 on pins 16/17
 
+  //Using Serial 2 via SERCOM 4 on pins 16/17
   SerialPol.begin(SERIALPOLSPEED);
   delay(5);
 
@@ -128,5 +128,17 @@ unsigned int getVariable(int deviceNumber, unsigned char variableID) {
   SerialPol.write(variableID);
   return readByte() + 256*readByte();
 }
+
+void printStatusInformation(int deviceNumber) {
+  Serial.print("The current error status byte is: ");
+  Serial.println(getVariable(deviceNumber, ERROR_STATUS), BIN);
+  Serial.print("The current limit status byte is: ");
+  Serial.println(getVariable(deviceNumber, LIMIT_STATUS), BIN);
+  Serial.print("The last reset casue was: ");
+  Serial.println(getVariable(deviceNumber, RESET_FLAGS));
+}
+
+
+
 
 #endif

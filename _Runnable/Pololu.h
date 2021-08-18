@@ -3,9 +3,6 @@
 
 #define SERIALPOLSPEED 19200
 
-/******************************** Device Names ********************************/
-#define DEFAULT_NAME 13
-
 /******************************** Variable IDs *********************************
 *******************************************************************************/
 #define ERROR_STATUS 0
@@ -151,5 +148,7 @@ unsigned char setMotorLimit(int deviceNumber, unsigned char limitID, unsigned in
 // Requests the a variable from teh specified motor. See the Variable IDs
 // section of Polou.h for the different ID's and potential values.
 unsigned int getVariable(int deviceNumber, unsigned char variableID);
+
+void printStatusInformation(int deviceNumber);
 
 #endif

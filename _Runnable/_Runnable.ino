@@ -13,9 +13,9 @@ void setup_USBserial(){
 
 void setup() {
   //setup_TCC();
-  int polDeviceNames[1] = {DEFAULT_NAME};
+  int pololou_names[2] = {DEFAULT_SMC, DEFAULT_SERVO};
 
-  setup_PololuUart(polDeviceNames, 1);
+  setup_PololuUart(pololou_names, 1);
   //setup_encoder();
   //setup_SPI();
   if(SERIALMONITER) setup_USBserial();
@@ -27,7 +27,7 @@ void setup() {
   }
 
   Serial.print("The default brake duration is:");
-  Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_BRAKE_DURATION));
+  Serial.println(getVariable(DEFAULT_SMC, MAX_FORWARD_BRAKE_DURATION));
 }
 
 void loop() {
@@ -84,11 +84,5 @@ void loop() {
   Serial.println(getVariable(DEFAULT_NAME, MAX_BACKWARD_SPEED));
   delay(500); */
 
-  Serial.print("The current error status byte is: ");
-  Serial.println(getVariable(DEFAULT_NAME, ERROR_STATUS), BIN);
-  Serial.print("The current limit status byte is: ");
-  Serial.println(getVariable(DEFAULT_NAME, LIMIT_STATUS), BIN);
-  Serial.print("The last reset casue was: ");
-  Serial.println(getVariable(DEFAULT_NAME, RESET_FLAGS));
-  delay(10000);
+  printStatusInformation(DEFAULT_SMC);
 }
