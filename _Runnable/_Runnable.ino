@@ -13,9 +13,11 @@ void setup_USBserial(){
 
 void setup() {
   //setup_TCC();
-  int pololou_names[2] = {DEFAULT_SMC, DEFAULT_SERVO};
+  int pololouSMC_names[1] = {DEFAULT_SMC};
+  int pololouServo_names[1] = {DEFAULT_SERVO};
 
-  setup_PololuUart(pololou_names, 1);
+  setup_PololuUart();
+  //setup_PololuSMC(pololouSMC_names, 1);
   //setup_encoder();
   //setup_SPI();
   if(SERIALMONITER) setup_USBserial();
@@ -25,9 +27,6 @@ void setup() {
     testmessage[1] = 0xAB;
     testmessage[2] = 0xAB;
   }
-
-  Serial.print("The default brake duration is:");
-  Serial.println(getVariable(DEFAULT_SMC, MAX_FORWARD_BRAKE_DURATION));
 }
 
 void loop() {
@@ -83,6 +82,33 @@ void loop() {
   Serial.print("The backward motor speed limit is: ");
   Serial.println(getVariable(DEFAULT_NAME, MAX_BACKWARD_SPEED));
   delay(500); */
+  Serial.println();
+  Serial.print("The current error message is: ");
+  Serial.println(getErrorsServo(DEFAULT_SERVO));
 
-  printStatusInformation(DEFAULT_SMC);
+  setTargetServo(DEFAULT_SERVO, 0, 0);
+  setTargetServo(DEFAULT_SERVO, 1, 0);
+  delay(20);
+  Serial.print("The target speed of channel 0 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 0));
+  Serial.print("The target speed of channel 1 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+  delay(2000);
+  setTargetServo(DEFAULT_SERVO, 0, 5000);
+  setTargetServo(DEFAULT_SERVO, 1, 6000);
+  delay(20);
+  Serial.print("The target speed of channel 0 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 0));
+  Serial.print("The target speed of channel 1 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+  setSpeedLimitServo(DEFAULT_SERVO, 0, 140);
+  setSpeedLimitServo(DEFAULT_SERVO, 1, 20000);
+  setAccLimitServo(DEFAULT_SERVO, 0, 10);
+  setAccLimitServo(DEFAULT_SERVO, 1, 180);
+  delay(3000);
+  setSpeedLimitServo(DEFAULT_SERVO, 0, 0);
+  setSpeedLimitServo(DEFAULT_SERVO, 1, 0);
+  setAccLimitServo(DEFAULT_SERVO, 0, 0);
+  setAccLimitServo(DEFAULT_SERVO, 1, 0);
+  delay(3000);
 }

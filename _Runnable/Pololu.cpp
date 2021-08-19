@@ -26,7 +26,7 @@ void SERCOM4_3_Handler()
 }
 
 //Initialises the Serial Connection
-void setup_PololuUart(int* deviceNumbers, int numberDevices){
+void setup_PololuUart(){
 
   //Using Serial 2 via SERCOM 4 on pins 16/17
   SerialPol.begin(SERIALPOLSPEED);
@@ -38,9 +38,13 @@ void setup_PololuUart(int* deviceNumbers, int numberDevices){
 
   // Assign error reading pin
   pinMode(POL_ERR_PIN, INPUT);
+  setPolSerialSpeedAll();
+}
 
-  setPolSerialSpeed();
-  exitSafeStartAll(deviceNumbers, numberDevices);
+// set up the simple motor controllers
+void setup_PololuSMC(int* deviceNumbers, int numberDevices) {
+  exitSafeStartAllSMC(deviceNumbers, numberDevices);
+  // More code could be added here to implement motor settinf changes and that
 }
 
 // Sets the serial communication speed in the simple motor controller
@@ -51,7 +55,7 @@ void setPolSerialSpeedAll() {
 // Exits safe start for all of the devices in deviceNumbers
 void exitSafeStartAllSMC(int *deviceNumbers, int numberDevices) {
   for(int i = 0; i < numberDevices; i++) {
-    exitSafeStart(deviceNumbers[i]);
+    exitSafeStartSMC(deviceNumbers[i]);
   }
 }
 
@@ -116,7 +120,7 @@ unsigned char setMotorLimitSMC(int deviceNumber, unsigned char limitID, unsigned
   SerialPol.write(limitID);
   SerialPol.write(limitValue & 0x7F);
   SerialPol.write(limitValue >> 7);
-  return readByte();
+  return readByteAll();
 }
 
 // Requests the a variable from the specified motor. See the Variable IDs
@@ -126,20 +130,82 @@ unsigned int getVariableSMC(int deviceNumber, unsigned char variableID) {
   SerialPol.write(deviceNumber);
   SerialPol.write(0x21);
   SerialPol.write(variableID);
-  return readByte() + 256*readByte();
+  return readByteAll() + 256*readByteAll();
 }
 
 // Prints the current status information of the named device.
 void printStatusInformationSMC(int deviceNumber) {
   Serial.print("The current error status byte is: ");
-  Serial.println(getVariable(deviceNumber, ERROR_STATUS), BIN);
+  Serial.println(getVariableSMC(deviceNumber, ERROR_STATUS), BIN);
   Serial.print("The current limit status byte is: ");
-  Serial.println(getVariable(deviceNumber, LIMIT_STATUS), BIN);
+  Serial.println(getVariableSMC(deviceNumber, LIMIT_STATUS), BIN);
   Serial.print("The last reset casue was: ");
-  Serial.println(getVariable(deviceNumber, RESET_FLAGS));
+  Serial.println(getVariableSMC(deviceNumber, RESET_FLAGS));
 }
 
-void setTargetServo
+// As these will all be in servo mode, the target represents the pulse width to
+// transmit in units of quarter-microseconds. A target value of 0 tells the Maestro
+// to stop sending pulses to the servo.
+void setTargetServo(int deviceNumber, int channelNumber, int target) {
+  if(target < 0) return;
+  SerialPol.write(0xAA);
+  SerialPol.write(deviceNumber);
+  SerialPol.write(0x04);
+  SerialPol.write(channelNumber);
+  SerialPol.write(target & 0x7F);
+  SerialPol.write((target >> 7) & 0x7F);
+}
 
+// Limits the speed at which the specified servo and channel's output can change.
+// This is in units of 0.25 microseconds per 10 milliseconds - eg 140 means 3.5
+// microsecond per millisecond. 0 means no limit. So, speed in range of (0, 40 000)
+void setSpeedLimitServo(int deviceNumber, int channelNumber, uint16_t speed) {
+  SerialPol.write(0xAA);
+  SerialPol.write(deviceNumber);
+  SerialPol.write(0x07);
+  SerialPol.write(channelNumber);
+  SerialPol.write(speed & 0x7F);
+  SerialPol.write((speed >> 7) & 0x7F);
+}
+
+// Limits the accelration of servo's output channel. Again, 0 means no limit. The
+// units are (0.25 microseconds)/(10 milliseconds)/(80 milliseconds). This is a
+// value between 0 and 255.
+void setAccLimitServo(int deviceNumber, int channelNumber, uint16_t accel) {
+  SerialPol.write(0xAA);
+  SerialPol.write(deviceNumber);
+  SerialPol.write(0x09);
+  SerialPol.write(channelNumber);
+  SerialPol.write(accel & 0x7F);
+  SerialPol.write((accel >> 7) & 0x7F);
+}
+
+// Gets the positions from a specified channel. When the channel is configured
+// to servo mode this is the current pulse width on the channel
+unsigned int getPositionServo(int deviceNumber, int channelNumber) {
+  SerialPol.write(0xAA);
+  SerialPol.write(deviceNumber);
+  SerialPol.write(0x10);
+  SerialPol.write(channelNumber);
+  return readByteAll() + 256*readByteAll();
+}
+
+/** Gets the errors from the servo named. The bits represent the following:
+0 - Serial Signal Error
+1 - Serial Overrun Error
+2 - Serial Buffer Full
+3 - Serial CRC Error
+4 - Serial Protocal Error
+5 - Serial Timeout
+6 - Script Stack Error
+7 - Script Call Stack Error
+8 - Script Program Counter Error
+*/
+unsigned int getErrorsServo(int deviceNumber) {
+  SerialPol.write(0xAA);
+  SerialPol.write(deviceNumber);
+  SerialPol.write(0x21);
+  return readByteAll() + 256*readByteAll();
+}
 
 #endif

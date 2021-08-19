@@ -119,7 +119,9 @@ void SERCOM4_2_Handler();
 void SERCOM4_3_Handler();
 
 //Initialises the Serial Connection
-void setup_PololuUart(int* deviceNumbers, int numberDevices);
+void setup_PololuUart();
+// Set up the simple motor controllers
+void setup_PololuSMC(int* deviceNumbers, int numberDevices);
 // Exits saft start mode on the device indicated by device number
 void exitSafeStartSMC(unsigned char deviceNumber);
 // Exits safe start for all of the devices in deviceNumbers
@@ -150,5 +152,34 @@ unsigned char setMotorLimitSMC(int deviceNumber, unsigned char limitID, unsigned
 unsigned int getVariableSMC(int deviceNumber, unsigned char variableID);
 // Prints the current status information of the named device.
 void printStatusInformationSMC(int deviceNumber);
-
+// As these will all be in servo mode, the target represents the pulse width to
+// transmit in units of quarter-microseconds. A target value of 0 tells the Maestro
+// to stop sending pulses to the servo.
+void setTargetServo(int deviceNumber, int channelNumber, int target);
+// Limits the speed at which the specified servo and channel's output can change.
+// This is in units of 0.25 microseconds per 10 milliseconds - eg 140 means 3.5
+// microsecond per millisecond. 0 means no limit. Default has this set with a
+// minimum pulse width of 992 microseconds and a max of 2000 microseconds (So,
+// between 3968 and 8000 in our units), but this can be changes in the app thingy.
+void setSpeedLimitServo(int deviceNumber, int channelNumber, uint16_t speed);
+// Limits the accelration of servo's output channel. Again, 0 means no limit. The
+// units are (0.25 microseconds)/(10 milliseconds)/(80 milliseconds). This is a
+// value between 0 and 255.
+void setAccLimitServo(int deviceNumber, int channelNumber, uint16_t accel);
+// Gets the positions from a specified channel. When the channel is configured
+// to servo mode this is the current pulse width on the channel. Note that the
+// units here are again in 0.25 microseconds.
+unsigned int getPositionServo(int deviceNumber, int channelNumber);
+/** Gets the errors from the servo named. The bits represent the following:
+0 - Serial Signal Error
+1 - Serial Overrun Error
+2 - Serial Buffer Full
+3 - Serial CRC Error
+4 - Serial Protocal Error
+5 - Serial Timeout
+6 - Script Stack Error
+7 - Script Call Stack Error
+8 - Script Program Counter Error
+*/
+unsigned int getErrorsServo(int deviceNumber);
 #endif
