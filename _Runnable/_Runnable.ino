@@ -86,29 +86,46 @@ void loop() {
   Serial.print("The current error message is: ");
   Serial.println(getErrorsServo(DEFAULT_SERVO));
 
-  setTargetServo(DEFAULT_SERVO, 0, 0);
-  setTargetServo(DEFAULT_SERVO, 1, 0);
+
+  setTargetServo(DEFAULT_SERVO, 1, 2000);
   delay(20);
   Serial.print("The target speed of channel 0 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 0));
+  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+  delay(2000);
+  setTargetServo(DEFAULT_SERVO, 1, 2000);
+  delay(20);
+  Serial.print("The target speed of channel 1 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+  setTargetServo(DEFAULT_SERVO, 1, 3333);
+  delay(20);
   Serial.print("The target speed of channel 1 is: ");
   Serial.println(getPositionServo(DEFAULT_SERVO, 1));
   delay(2000);
-  setTargetServo(DEFAULT_SERVO, 0, 5000);
-  setTargetServo(DEFAULT_SERVO, 1, 6000);
+  setTargetServo(DEFAULT_SERVO, 1, 4667);
   delay(20);
-  Serial.print("The target speed of channel 0 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 0));
   Serial.print("The target speed of channel 1 is: ");
   Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  setSpeedLimitServo(DEFAULT_SERVO, 0, 140);
-  setSpeedLimitServo(DEFAULT_SERVO, 1, 20000);
-  setAccLimitServo(DEFAULT_SERVO, 0, 10);
-  setAccLimitServo(DEFAULT_SERVO, 1, 180);
-  delay(3000);
-  setSpeedLimitServo(DEFAULT_SERVO, 0, 0);
-  setSpeedLimitServo(DEFAULT_SERVO, 1, 0);
-  setAccLimitServo(DEFAULT_SERVO, 0, 0);
-  setAccLimitServo(DEFAULT_SERVO, 1, 0);
-  delay(3000);
+  delay(2000);
+  setTargetServo(DEFAULT_SERVO, 1, 6000);
+  delay(20);
+  Serial.print("The target speed of channel 1 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+  delay(2000);
+  setTargetServo(DEFAULT_SERVO, 1, 7333);
+  delay(20);
+  Serial.print("The target speed of channel 1 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+  delay(2000);
+  setTargetServo(DEFAULT_SERVO, 1, 8667);
+  delay(20);
+  Serial.print("The target speed of channel 1 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+  delay(2000);
+  setTargetServo(DEFAULT_SERVO, 1, 10000);
+  delay(20);
+  Serial.print("The target speed of channel 1 is: ");
+  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+  delay(2000);
+
+
 }
