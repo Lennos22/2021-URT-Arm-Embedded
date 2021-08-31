@@ -13,22 +13,24 @@ void setup_USBserial(){
 }
 
 void setup() {
+<<<<<<< _Runnable/_Runnable.ino
+  setup_CDSTimer();
+  setup_CDS_SPI();
+=======
   //setup_TCC();
   int pololouSMC_names[1] = {DEFAULT_SMC};
   int pololouServo_names[1] = {DEFAULT_SERVO};
 
+>>>>>>> _Runnable/_Runnable.ino
   setup_PololuUart();
   //setup_PololuSMC(pololouSMC_names, 1);
   //setup_encoder();
-  //setup_SPI();
   if(SERIALMONITER) setup_USBserial();
-
-  if(SENDSERIAL){
-    testmessage[0] = 0xAA;
-    testmessage[1] = 0xAB;
-    testmessage[2] = 0xAB;
-  }
+  timer1kztest();
+  SPItest();
 }
+
+
 
 void loop() {
 
@@ -44,12 +46,16 @@ void loop() {
       Serial.println();
     }
   }
+<<<<<<< _Runnable/_Runnable.ino
+
+=======
   /**
   if(SENDSERIAL){
     SerialPol.write(testmessage, 3);
     SerialPol.flush();
     delay(2000);
   }
+>>>>>>> _Runnable/_Runnable.ino
   delay(100);
   **/
   // put your main code here, to run repeatedly:
