@@ -13,15 +13,15 @@ void setup_USBserial(){
 }
 
 void setup() {
-<<<<<<< _Runnable/_Runnable.ino
+
   setup_CDSTimer();
   setup_CDS_SPI();
-=======
+
   //setup_TCC();
   int pololouSMC_names[1] = {DEFAULT_SMC};
   int pololouServo_names[1] = {DEFAULT_SERVO};
 
->>>>>>> _Runnable/_Runnable.ino
+
   setup_PololuUart();
   //setup_PololuSMC(pololouSMC_names, 1);
   //setup_encoder();
@@ -46,9 +46,6 @@ void loop() {
       Serial.println();
     }
   }
-<<<<<<< _Runnable/_Runnable.ino
-
-=======
   /**
   if(SENDSERIAL){
     SerialPol.write(testmessage, 3);
