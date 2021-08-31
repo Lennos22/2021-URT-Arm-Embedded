@@ -4,7 +4,11 @@
 #include <Arduino.h>   // required before wiring_private.h
 #include "wiring_private.h" // pinPeripheral() function
 #include "PinAssignment.h"
+<<<<<<< _Runnable/runnable.h
 #include <SPI.h>
+=======
+#include "PololuDeviceNames.h"
+>>>>>>> _Runnable/runnable.h
 
 // GLOBAL FLAGS
 #define SERIALMONITER 0
