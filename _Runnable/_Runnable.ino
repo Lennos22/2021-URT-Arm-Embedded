@@ -2,8 +2,13 @@
 #include "Pololu.h"
 #include "CDS92Timers.h"
 #include "PiSerial.h"
+#include "I2C.h"
+#include "IMU_class.h"
 
 uint8_t testmessage[3];
+Vector accel, gyro;
+IMU imu;
+bool imu_connected = false;
 
 void setup_USBserial(){
   Serial.begin(9600);
@@ -26,11 +31,25 @@ void setup() {
   //setup_PololuSMC(pololouSMC_names, 1);
   //setup_encoder();
   if(SERIALMONITER) setup_USBserial();
+
+  Serial.println("Got here");
+  setup_I2C();
+  
+  imu = IMU();
+  if(imu.begin(PM_2_G, PM_250_DEG_SEC, MAX_44_HZ)) {
+    Serial.println("IMU Connected.");
+    imu_connected = true;
+  } else {
+    Serial.println("IMU failed to connect.");
+  }
+  /** Serial.println("past I2C setup");
+  Serial.print("The IMU accleration range is: ");
+  Serial.println(imu.getAccRange());
+  Serial.print("The IMU gyro scale is: ");
+  Serial.print(imu.getGyroScale());*/
   timer1kztest();
   SPItest();
 }
-
-
 
 void loop() {
 
@@ -52,7 +71,7 @@ void loop() {
     SerialPol.flush();
     delay(2000);
   }
->>>>>>> _Runnable/_Runnable.ino
+
   delay(100);
   **/
   // put your main code here, to run repeatedly:
@@ -69,67 +88,25 @@ void loop() {
   // Write to CDS SPI
   // Change CDS Frequencies
   // Write to Pololu Uart
-  /** Serial.print("The temperature is: ");
-  Serial.println(getVariable(DEFAULT_NAME, TEMPERATURE));
-  Serial.print("The input voltage is: ");
-  Serial.println(getVariable(DEFAULT_NAME, INPUT_VOLTAGE));
-  delay(500);
-  setMotorLimit(DEFAULT_NAME, BOTH_DIRECT_SPEED, 3200/2);
-  Serial.print("The motor speed limit is: ");
-  Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
-  delay(500);
-  setMotorLimit(DEFAULT_NAME, FORWARD_SPEED, 3200);
-  Serial.print("The forward motor speed limit is: ");
-  Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
-  delay(500);
-  setMotorLimit(DEFAULT_NAME, BACKWARD_SPEED, 3200/4);
-  Serial.print("The backward motor speed limit is: ");
-  Serial.println(getVariable(DEFAULT_NAME, MAX_BACKWARD_SPEED));
-  delay(500); */
-  Serial.println();
-  Serial.print("The current error message is: ");
-  Serial.println(getErrorsServo(DEFAULT_SERVO));
+  if(imu_connected) {
+    accel = imu.readRawAccel();
+    gyro = imu.readRawGyr();
 
-
-  setTargetServo(DEFAULT_SERVO, 1, 2000);
-  delay(20);
-  Serial.print("The target speed of channel 0 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 2000);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  setTargetServo(DEFAULT_SERVO, 1, 3333);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 4667);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 6000);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 7333);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 8667);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 10000);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-
-
+    Serial.println("Accel:");
+    Serial.print("x = ");
+    Serial.print(accel.x);
+    Serial.print(",y = ");
+    Serial.print(accel.y);
+    Serial.print(",z = ");
+    Serial.println(accel.z);
+    delay(10);
+    Serial.println("Gyro:");
+    Serial.print("x = ");
+    Serial.print(gyro.x);
+    Serial.print(",y = ");
+    Serial.print(gyro.y);
+    Serial.print(",z = ");
+    Serial.println(gyro.z);
+  }
+  delay(1000);
 }
