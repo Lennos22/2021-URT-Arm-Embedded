@@ -6,10 +6,11 @@
 #define PM_8_G 2
 #define PM_16_G 3
 
-#define PM_2_G_FACT 16384
-#define PM_4_G_FACT 8192
-#define PM_8_G_FACT 4096
-#define PM_16_G_FACT 1048
+#define GRAV 9.81
+#define PM_2_G_FACT (16384)
+#define PM_4_G_FACT (8192)
+#define PM_8_G_FACT (4096)
+#define PM_16_G_FACT (1048)
 
 #define PM_250_DEG_SEC 0
 #define PM_500_DEG_SEC 1
@@ -29,7 +30,11 @@
 #define MAX_10_HZ 5
 #define MAX_5_HZ 6
 
-#define IMU_NAME                      (0b1101000)
+// Constant to convert raw temperature to Celsius degrees
+#define MPU6050_TEMP_LINEAR_COEF (1.0/340.00)
+#define MPU6050_TEMP_OFFSET       36.53
+
+#define IMU_NAME                      (0x68)
 #define MPU6050_REG_ACCEL_XOUT_H      (0x3B) // Acc measurements
 #define MPU6050_REG_ACCEL_XOUT_L      (0x3C)
 #define MPU6050_REG_ACCEL_YOUT_H      (0x3D)
@@ -54,9 +59,9 @@
 #ifndef VECTOR_STRUCT_H
 #define VECTOR_STRUCT_H
 struct Vector {
-  float x;
-  float y;
-  float z;
+  flaot x;
+  flaot y;
+  flaot z;
 };
 #endif
 
@@ -68,7 +73,7 @@ struct Sensitivity_Pair {
 
 class IMU {
   public:
-    Vector ra, rg;
+    Vector ra, rg, accelG, accel, gyro;
     Sensitivity_Pair a_sens, g_sens;
     bool begin(int accSens, int  gyroSens, int bandwidth);
     bool isConnected();
@@ -78,8 +83,8 @@ class IMU {
     int8_t readRegister8(uint8_t reg);
     void writeRegister8(uint8_t reg, uint8_t value);
     void writeRegister16(uint8_t reg, uint16_t value);
-    Vector readRawAccel();
-    Vector readRawGyr();
+    Vector readAccel();
+    Vector readGyro();
     void setAccRange(int range);
     uint8_t getAccRange();
     void setGyroScale(int scale);
@@ -87,7 +92,10 @@ class IMU {
     void setDLPFBandwidth(int bandwidth);
     uint8_t getBandwidth();
     byte read8(byte registerAddr);
-    byte write8(byte registerAddr, byte value);
+    void write8(byte registerAddr, byte value);
+    void accelRawToG();
+    int16_t readTemp();
+    int16_t read16(uint8_t reg);
 };
 
 

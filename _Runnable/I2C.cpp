@@ -8,8 +8,8 @@
 
 
 void setup_I2C() {
-  Serial.print("in I2C setup");
-  Wire.begin();
+  Serial.println("in I2C setup");
+  //Wire.begin();
   //Wire.setClock(I2C_CLOCK_FREQ);
 }
 

@@ -4,6 +4,7 @@
 #include "PiSerial.h"
 #include "I2C.h"
 #include "IMU_class.h"
+#include <Wire.h>
 
 uint8_t testmessage[3];
 Vector accel, gyro;
@@ -31,12 +32,11 @@ void setup() {
   //setup_PololuSMC(pololouSMC_names, 1);
   //setup_encoder();
   if(SERIALMONITER) setup_USBserial();
+  Wire.begin();
+  //setup_I2C();
 
-  Serial.println("Got here");
-  setup_I2C();
-  
   imu = IMU();
-  if(imu.begin(PM_2_G, PM_250_DEG_SEC, MAX_44_HZ)) {
+  if(imu.begin(PM_2_G, PM_250_DEG_SEC, MAX_10_HZ)) {
     Serial.println("IMU Connected.");
     imu_connected = true;
   } else {
@@ -89,8 +89,8 @@ void loop() {
   // Change CDS Frequencies
   // Write to Pololu Uart
   if(imu_connected) {
-    accel = imu.readRawAccel();
-    gyro = imu.readRawGyr();
+    accel = imu.readAccel();
+    gyro = imu.readGyro();
 
     Serial.println("Accel:");
     Serial.print("x = ");
@@ -100,13 +100,16 @@ void loop() {
     Serial.print(",z = ");
     Serial.println(accel.z);
     delay(10);
+    Serial.print("The temperature is: ");
+    Serial.println(imu.readTemp());
+
     Serial.println("Gyro:");
     Serial.print("x = ");
-    Serial.print(gyro.x);
+    Serial.print(gyro.x/imu.g_sens.factor);
     Serial.print(",y = ");
-    Serial.print(gyro.y);
+    Serial.print(gyro.y/imu.g_sens.factor);
     Serial.print(",z = ");
-    Serial.println(gyro.z);
+    Serial.println(gyro.z/imu.g_sens.factor);
   }
-  delay(1000);
+  delay(1500);
 }
