@@ -7,30 +7,11 @@
 #include "IMU_class.h"
 
 bool IMU::begin(int accSens, int  gyroSens, int bandwidth) {
-  // Set Acc. and Gyro. Sensitivity
-  /** byte error;
 
-  Wire.beginTransmission(0x68);
-  Wire.write(0x75);
-  error = Wire.endTransmission();
-  if(error == 0) {
-     Serial.println("\n acknowledged \n ");
-  } else {
-    Serial.println("\n not acknowledged \n ");
+  if(isConnected()) {
+    return false;
   }
-  Wire.beginTransmission(0x68);
-  Wire.requestFrom(0x68, 1);
-
-  byte value = Wire.read();
-  error = Wire.endTransmission();
-
-  Serial.print("The error value was: ");
-  Serial.println(error);
-  Serial.print("The register value was: 0x");
-  Serial.println(value, HEX);*/
-
   wakeUp();
-
   setAccRange(accSens);
   setGyroScale(gyroSens);
   setDLPFBandwidth(bandwidth);
@@ -50,13 +31,13 @@ bool IMU::begin(int accSens, int  gyroSens, int bandwidth) {
   gyro.x = 0;
   gyro.y = 0;
   gyro.z = 0;
-
-  isConnected();
   return true;
 }
 
 bool IMU::isConnected() {
-  return read8(MPU6050_REGISTER_WHO_AM_I) == MPU6050_DEFAULT_ADDRESS;
+  uint8_t value = readRegister8(MPU6050_REGISTER_WHO_AM_I) & 0b00001111;
+  value |= (0b0110000);
+  return value == MPU6050_DEFAULT_ADDRESS;
 }
 
 void IMU::sleepMode() {
@@ -64,7 +45,7 @@ void IMU::sleepMode() {
 }
 
 void IMU::wakeUp() {
-    write8(MPU6050_REGISTER_PWR_MGMT_1, 0b00000000);
+    writeRegister8(MPU6050_REGISTER_PWR_MGMT_1, 0b00000000);
 }
 
 
@@ -86,8 +67,7 @@ Vector IMU::readAccel() {
   uint8_t zha = Wire.read();
   uint8_t zla = Wire.read();
 
-  /**
-  Serial.print("Accel: \nx \ n HIGH:");
+  /**Serial.print("Accel: \nx \ n HIGH:");
   Serial.print(xha, HEX);
   Serial.print(", LOW: ");
   Serial.println(xla, HEX);
@@ -105,7 +85,7 @@ Vector IMU::readAccel() {
   Serial.println( xha << 8 | xla, HEX);
   Serial.println();
   Serial.print("As a int16_t : ");
-  Serial.println((int16_t)(xha << 8 | xla)); */
+  Serial.println((int16_t)(xha << 8 | xla));*/
 
   ra.x = (int16_t)(xha << 8 | xla);
   ra.y = (int16_t)(yha << 8 | yla);
@@ -140,13 +120,32 @@ Vector IMU::readGyro() {
   rg.x = (int16_t)(xha << 8 | xla);
   rg.y = (int16_t)(yha << 8 | yla);
   rg.z = (int16_t)(zha << 8 | zla);
+  gyroRawtoDPS();
+  return gyro;
+}
 
-  return rg;
+void IMU::gyroRawtoDPS() {
+  gyro.x = rg.x/g_sens.factor;
+  gyro.y = rg.y/g_sens.factor;
+  gyro.z = rg.z/g_sens.factor;
 }
 
 int16_t IMU::readTemp() {
-  int16_t rawTemp = read16(MPU6050_REG_TEMP_OUT_H);
-  return (int16_t)(rawTemp/340 + 36.53);
+  int16_t rawTemp ;
+  Wire.beginTransmission(IMU_NAME);
+  Wire.write(MPU6050_REG_TEMP_OUT_H);
+  Wire.endTransmission();
+
+  Wire.beginTransmission(IMU_NAME);
+  Wire.requestFrom(IMU_NAME, 2);
+
+  while(Wire.available() < 2);
+
+  uint8_t tha = Wire.read();
+  uint8_t tla = Wire.read();
+
+  rawTemp = (int16_t)(tha << 8 | tla);
+  return rawTemp/340 + 36.53;
 }
 
 
@@ -157,7 +156,7 @@ void IMU::setGyroScale(int scale) {
   value = readRegister8(MPU6050_REG_GYRO_CONFIG);
   value &= 0b11100111;
   value |= scale_8;
-  writeRegister8(MPU6050_REG_GYRO_CONFIG, value);
+  writeRegister8(MPU6050_REG_GYRO_CONFIG, value << 3);
 
   if(scale == PM_250_DEG_SEC) {
     g_sens.mode = PM_250_DEG_SEC;
@@ -177,17 +176,16 @@ void IMU::setGyroScale(int scale) {
 uint8_t IMU::getAccRange() {
   uint8_t value;
   value = readRegister8(MPU6050_REG_ACCEL_CONFIG);
-  return value;
+  return value >> 3;
 }
 
 void IMU::setAccRange(int range) {
   uint8_t value;
-  uint8_t range_8 = (uint8_t)range;
-
   value = readRegister8(MPU6050_REG_ACCEL_CONFIG);
   value &= 0b11100111;
-  value |= range_8;
-  writeRegister8(MPU6050_REG_ACCEL_CONFIG, range_8);
+  value |= range;
+  Serial.println(value, BIN);
+  writeRegister8(MPU6050_REG_ACCEL_CONFIG, value << 3);
 
   if(range == PM_2_G) {
     a_sens.mode = PM_2_G;
@@ -199,20 +197,20 @@ void IMU::setAccRange(int range) {
     a_sens.mode = PM_8_G;
     a_sens.factor = PM_8_G_FACT;
   } else {
-    a_sens.mode = PM_8_G;
-    a_sens.factor = PM_8_G_FACT;
+    a_sens.mode = PM_16_G;
+    a_sens.factor = PM_16_G_FACT;
   }
 }
 
 uint8_t IMU::getGyroScale() {
   uint8_t value = readRegister8(MPU6050_REG_GYRO_CONFIG);
-  return value;
+  return value >> 3;
 }
 
 void IMU::setDLPFBandwidth(int bandwidth) {
-  bandwidth = (int8_t)bandwidth;
+  uint8_t bandwidth_8 = (uint8_t)bandwidth;
   uint8_t value = readRegister8(MPU6050_REGISTER_CONFIG);
-  value = (value & 0b11111000) | bandwidth;
+  value = (value & 0b11111000) | bandwidth_8;
   writeRegister8(MPU6050_REGISTER_CONFIG, value);
 }
 
@@ -221,53 +219,10 @@ uint8_t IMU::getBandwidth() {
   return value &= 0b00000111;
 }
 
-int16_t IMU::readRegister16(uint8_t reg) {
-  int16_t value;
-  Wire.beginTransmission(IMU_NAME);
-  Wire.write(reg);
-  Wire.endTransmission();
 
-  Wire.beginTransmission(IMU_NAME);
-  Wire.requestFrom(IMU_NAME, 2);
-  while(!Wire.available()) {};
 
-  uint8_t vha = Wire.read();
-  uint8_t vla = Wire.read();
-
-  Wire.endTransmission();
-  value = vha << 8 | vla;
-  return value;
-}
-
-int16_t IMU::read16(uint8_t reg) {
-  Wire.beginTransmission(0x68);
-  Wire.write(reg);
-  Wire.endTransmission();
-  Wire.requestFrom(0x68, 2);
-
-  return int16_t((int8_t )Wire.read()<<8 | (int8_t)Wire.read());
-}
-
-byte IMU::read8(byte registerAddr) {
-    Wire.beginTransmission(0x68);
-    Wire.write(registerAddr);
-    Serial.println(Wire.endTransmission());
-    Wire.beginTransmission(0x68);
-    Wire.requestFrom(0x68,1);
-    byte value = Wire.read();
-    Serial.print(Wire.endTransmission());
-    return value;
-}
-
-void IMU::write8(byte registerAddr, byte value) {
-    Wire.beginTransmission(MPU6050_DEFAULT_ADDRESS);
-    Wire.write(registerAddr);
-    Wire.write(value);
-    Wire.endTransmission(true);
-}
-
-int8_t IMU::readRegister8(uint8_t reg) {
-  int8_t value;
+uint8_t IMU::readRegister8(uint8_t reg) {
+  uint8_t value;
   Wire.beginTransmission(MPU6050_DEFAULT_ADDRESS);
   Wire.write(reg);
   Wire.endTransmission();

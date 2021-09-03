@@ -36,7 +36,7 @@ void setup() {
   //setup_I2C();
 
   imu = IMU();
-  if(imu.begin(PM_2_G, PM_250_DEG_SEC, MAX_10_HZ)) {
+  if(imu.begin(PM_16_G, PM_2000_DEG_SEC, MAX_5_HZ)) {
     Serial.println("IMU Connected.");
     imu_connected = true;
   } else {
@@ -99,17 +99,18 @@ void loop() {
     Serial.print(accel.y);
     Serial.print(",z = ");
     Serial.println(accel.z);
-    delay(10);
+    delay(1500);
+
     Serial.print("The temperature is: ");
     Serial.println(imu.readTemp());
 
     Serial.println("Gyro:");
     Serial.print("x = ");
-    Serial.print(gyro.x/imu.g_sens.factor);
+    Serial.print(gyro.x);
     Serial.print(",y = ");
-    Serial.print(gyro.y/imu.g_sens.factor);
+    Serial.print(gyro.y);
     Serial.print(",z = ");
-    Serial.println(gyro.z/imu.g_sens.factor);
+    Serial.println(gyro.z);
   }
-  delay(1500);
+  delay(10);
 }

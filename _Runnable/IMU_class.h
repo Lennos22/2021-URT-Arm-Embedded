@@ -10,7 +10,7 @@
 #define PM_2_G_FACT (16384)
 #define PM_4_G_FACT (8192)
 #define PM_8_G_FACT (4096)
-#define PM_16_G_FACT (1048)
+#define PM_16_G_FACT (2048)
 
 #define PM_250_DEG_SEC 0
 #define PM_500_DEG_SEC 1
@@ -76,26 +76,41 @@ class IMU {
     Vector ra, rg, accelG, accel, gyro;
     Sensitivity_Pair a_sens, g_sens;
     bool begin(int accSens, int  gyroSens, int bandwidth);
+
+    // Checks of there is a MUP6050 device connected. Weirdly this hasnt been
+    // working as expected, i.e. doesnt read the value in the register that is
+    // expected. So the bit-weise oppoerators chnge it to what is expected.
+    // Everything else works perfectly so figured it's not really worth worrying
+    // about.
     bool isConnected();
+
+    // Sleep/wake up will begin/stop the device from measuring
     void sleepMode();
     void wakeUp();
-    int16_t readRegister16(uint8_t reg);
-    int8_t readRegister8(uint8_t reg);
-    void writeRegister8(uint8_t reg, uint8_t value);
-    void writeRegister16(uint8_t reg, uint16_t value);
-    Vector readAccel();
-    Vector readGyro();
+
+    // Setters for the measurements ranges, and getters for checking
     void setAccRange(int range);
     uint8_t getAccRange();
     void setGyroScale(int scale);
     uint8_t getGyroScale();
+
+    // For setting and checking the digital low pass filter
     void setDLPFBandwidth(int bandwidth);
     uint8_t getBandwidth();
-    byte read8(byte registerAddr);
-    void write8(byte registerAddr, byte value);
+
+    // covert between the raw values and the scaled values
     void accelRawToG();
+    void gyroRawtoDPS();
+
+    // Read the accel and gyro data, as well as the die temperature
     int16_t readTemp();
-    int16_t read16(uint8_t reg);
+    Vector readAccel();
+    Vector readGyro();
+
+    // Read and write to registers of the size indicated
+    uint8_t readRegister8(uint8_t reg);
+    void writeRegister8(uint8_t reg, uint8_t value);
+    void writeRegister16(uint8_t reg, uint16_t value);
 };
 
 
