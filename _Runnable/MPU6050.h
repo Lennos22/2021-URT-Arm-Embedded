@@ -1,5 +1,5 @@
-#ifndef CPP_IMU_CLASS_H
-#define CPP_IMU_CPP_H
+#ifndef MPU6050_H
+#define MPU6050_H
 
 #define PM_2_G 0
 #define PM_4_G 1
@@ -34,7 +34,7 @@
 #define MPU6050_TEMP_LINEAR_COEF (1.0/340.00)
 #define MPU6050_TEMP_OFFSET       36.53
 
-#define IMU_NAME                      (0x68)
+#define MPU6050_NAME                      (0x68)
 #define MPU6050_REG_ACCEL_XOUT_H      (0x3B) // Acc measurements
 #define MPU6050_REG_ACCEL_XOUT_L      (0x3C)
 #define MPU6050_REG_ACCEL_YOUT_H      (0x3D)
@@ -56,25 +56,35 @@
 #define MPU6050_REGISTER_CONFIG       (0x1A) // DLPF config
 #define MPU6050_REGISTER_PWR_MGMT_1   (0x6B) // Power management
 
+// Struct for a 3-axis value set
 #ifndef VECTOR_STRUCT_H
 #define VECTOR_STRUCT_H
 struct Vector {
-  flaot x;
-  flaot y;
-  flaot z;
+  float x;
+  float y;
+  float z;
 };
 #endif
 
-
+// Struct for the sensitivity settings
 struct Sensitivity_Pair {
   int mode;
   int factor;
 };
 
-class IMU {
+
+class MPU6050 {
   public:
-    Vector ra, rg, accelG, accel, gyro;
+    // The raw measurements
+    Vector ra, rg;
+
+    // The real measurements
+    Vector accel, gyro;
+
+    // Sensitivity settings of the gyro and Accelerometer
     Sensitivity_Pair a_sens, g_sens;
+
+    // Initialiser fucntion that sets the sensitivities and DLPF bandwidth
     bool begin(int accSens, int  gyroSens, int bandwidth);
 
     // Checks of there is a MUP6050 device connected. Weirdly this hasnt been
@@ -98,14 +108,14 @@ class IMU {
     void setDLPFBandwidth(int bandwidth);
     uint8_t getBandwidth();
 
+    // Read the accel and gyro data, as well as the die temperature
+    double readTemp();
+    Vector readAccel();
+    Vector readGyro();
+
     // covert between the raw values and the scaled values
     void accelRawToG();
     void gyroRawtoDPS();
-
-    // Read the accel and gyro data, as well as the die temperature
-    int16_t readTemp();
-    Vector readAccel();
-    Vector readGyro();
 
     // Read and write to registers of the size indicated
     uint8_t readRegister8(uint8_t reg);

@@ -2,14 +2,13 @@
 #include "Pololu.h"
 #include "CDS92Timers.h"
 #include "PiSerial.h"
-#include "I2C.h"
-#include "IMU_class.h"
+#include "MPU6050.h"
 #include <Wire.h>
 
 uint8_t testmessage[3];
 Vector accel, gyro;
-IMU imu;
-bool imu_connected = false;
+MPU6050 mpu;
+bool mpu_connected = false;
 
 void setup_USBserial(){
   Serial.begin(9600);
@@ -35,18 +34,18 @@ void setup() {
   Wire.begin();
   //setup_I2C();
 
-  imu = IMU();
-  if(imu.begin(PM_16_G, PM_2000_DEG_SEC, MAX_5_HZ)) {
-    Serial.println("IMU Connected.");
-    imu_connected = true;
+  mpu = MPU6050();
+  if(mpu.begin(PM_2_G, PM_250_DEG_SEC, MAX_260_HZ)) {
+    Serial.println("MPU Connected.");
+    mpu_connected = true;
   } else {
-    Serial.println("IMU failed to connect.");
+    Serial.println("MPU failed to connect.");
   }
   /** Serial.println("past I2C setup");
-  Serial.print("The IMU accleration range is: ");
-  Serial.println(imu.getAccRange());
-  Serial.print("The IMU gyro scale is: ");
-  Serial.print(imu.getGyroScale());*/
+  Serial.print("The MPU accleration range is: ");
+  Serial.println(MPU.getAccRange());
+  Serial.print("The MPU gyro scale is: ");
+  Serial.print(MPU.getGyroScale());*/
   timer1kztest();
   SPItest();
 }
@@ -88,9 +87,9 @@ void loop() {
   // Write to CDS SPI
   // Change CDS Frequencies
   // Write to Pololu Uart
-  if(imu_connected) {
-    accel = imu.readAccel();
-    gyro = imu.readGyro();
+  if(mpu_connected) {
+    accel = mpu.readAccel();
+    gyro = mpu.readGyro();
 
     Serial.println("Accel:");
     Serial.print("x = ");
@@ -102,7 +101,7 @@ void loop() {
     delay(1500);
 
     Serial.print("The temperature is: ");
-    Serial.println(imu.readTemp());
+    Serial.println(mpu.readTemp());
 
     Serial.println("Gyro:");
     Serial.print("x = ");
