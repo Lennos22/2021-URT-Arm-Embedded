@@ -10,6 +10,9 @@ Vector accel, gyro;
 MPU6050 mpu;
 bool mpu_connected = false;
 
+int servoValue = 0;
+VL53L1X sensor;
+
 void setup_USBserial(){
   Serial.begin(9600);
   while (!Serial);
@@ -28,10 +31,12 @@ void setup() {
 
 
   setup_PololuUart();
-  //setup_PololuSMC(pololouSMC_names, 1);
+  setup_PololuSMC(pololouSMC_names, 0);
   //setup_encoder();
   if(SERIALMONITER) setup_USBserial();
   Wire.begin();
+
+  Wire.setClock(400000); // use 400 kHz I2C
   //setup_I2C();
 
   mpu = MPU6050();
@@ -48,6 +53,26 @@ void setup() {
   Serial.print(MPU.getGyroScale());*/
   timer1kztest();
   SPItest();
+
+  sensor.setTimeout(500);
+  if (!sensor.init())
+  {
+    Serial.println("Failed to detect and initialize sensor!");
+    while (1);
+  }
+
+  // Use long distance mode and allow up to 50000 us (50 ms) for a measurement.
+  // You can change these settings to adjust the performance of the sensor, but
+  // the minimum timing budget is 20 ms for short distance mode and 33 ms for
+  // medium and long distance modes. See the VL53L1X datasheet for more
+  // information on range and timing limits.
+  sensor.setDistanceMode(VL53L1X::Long);
+  sensor.setMeasurementTimingBudget(50000);
+
+  // Start continuous readings at a rate of one measurement every 50 ms (the
+  // inter-measurement period). This period should be at least as long as the
+  // timing budget.
+  sensor.startContinuous(50);
 }
 
 void loop() {
@@ -98,18 +123,34 @@ void loop() {
     Serial.print(accel.y);
     Serial.print(",z = ");
     Serial.println(accel.z);
-    delay(1500);
 
-    Serial.print("The temperature is: ");
-    Serial.println(mpu.readTemp());
 
-    Serial.println("Gyro:");
-    Serial.print("x = ");
-    Serial.print(gyro.x);
-    Serial.print(",y = ");
-    Serial.print(gyro.y);
-    Serial.print(",z = ");
-    Serial.println(gyro.z);
+    servoValue = accel.x*4000 + 6000;
+    Serial.print("The servo setting value is: ");
+    Serial.println(servoValue);
+    setTargetServo(DEFAULT_SERVO, 0, servoValue);
+    //delay(1000);
+    //
+    // Serial.print("The temperature is: ");
+    // Serial.println(mpu.readTemp());
+
+    // Serial.println("Gyro:");
+    // Serial.print("x = ");
+    // Serial.print(gyro.x);
+    // Serial.print(",y = ");
+    // Serial.print(gyro.y);
+    // Serial.print(",z = ");
+    // Serial.println(gyro.z);
   }
-  delay(10);
+  delay(500);
+  // sensor.read();
+  //
+  // Serial.print("range: ");
+  // Serial.print(sensor.ranging_data.range_mm);
+  // Serial.print("\tstatus: ");
+  // Serial.println(VL53L1X::rangeStatusToString(sensor.ranging_data.range_status));
+  //
+  // servoValue = (sensor.ranging_data.range_mm, 0, 3000, 2000, 10000);
+  // setTargetServo(DEFAULT_SERVO, 0, servoValue);
+  // delay(2000);
 }

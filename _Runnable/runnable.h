@@ -6,6 +6,7 @@
 #include "PinAssignment.h"
 #include <SPI.h>
 #include "PololuDeviceNames.h"
+#include "VL53L1X.h"
 
 // GLOBAL FLAGS
 #define SERIALMONITER 1
