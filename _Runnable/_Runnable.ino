@@ -170,7 +170,7 @@ void loop() {
   // setTargetServo(DEFAULT_SERVO, 0, servoValue);
 
   double angleRaw, angleFromZero;
-  int zero, gain, error;
+  int zero, gain, error, name;
   if(encoder_connected) {
     // angleRaw = encoder.getPositionRaw();
     // angleFromZero = encoder.getPositionFromZero();
@@ -187,10 +187,24 @@ void loop() {
     // Serial.println(gain, BIN);
     // Serial.print("The zero position is: ");
     // Serial.println(zero);
+    name = encoder.setAddress(72);
+    Serial.print("The returned address is: ");
+    Serial.println(name);
+    delay(500);
     Serial.print("The address is: ");
     Serial.println(encoder.readAddress());
-    Serial.print("The zero position is: ");
-    Serial.println(encoder.readZeroPosition()*AS5048_RESOLUTION_FACTOR);
+    delay(3000);
+
+    name = encoder.setAddress(64);
+    Serial.print("The returned address is: ");
+    Serial.println(name);
+    delay(500);
+    Serial.print("The address is: ");
+    Serial.println(encoder.readAddress());
+    delay(3000);
+    //
+    // Serial.print("The zero position is: ");
+    // Serial.println(encoder.readZeroPosition()*AS5048_RESOLUTION_FACTOR);
   }
   delay(500);
 }

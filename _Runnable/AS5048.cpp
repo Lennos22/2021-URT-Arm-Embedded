@@ -25,14 +25,8 @@ bool AS5048::begin(uint8_t newName) {
   name = AS5048_DEFAULT_ADDRESS;
   Serial.println("The device name will be set to: ");
   Serial.println(newName);
-  uint8_t nameToWrite = newName;
-  nameToWrite &= 0b01111111; // the 8th bit is inverted
-  nameToWrite >> 2; // the 2 least significant bits are from pin values A2/1
-  writeRegister8(AS5048_I2C_ADDRESS_REG, nameToWrite);
-  name = newName;
-  uint8_t readName = readRegister8(AS5048_I2C_ADDRESS_REG);
-  readName << 2;
-  readName |= 0b1000000;
+  uint8_t readName = setAddress(newName);
+  
   if(readName == newName) {
     Serial.print("The device name has been set to: ");
     Serial.println(newName);
@@ -148,13 +142,43 @@ uint8_t AS5048::getGainValue() {
 }
 
 uint8_t AS5048::setAddress(uint8_t newAddress) {
-  uint8_t toWrite = newAddress | 0b0111111;
-  toWrite >> 2;
+  if (newAddress > 127 || newAddress < 0) {
+    Serial.println("The new adress was invalid, address is a 7-bit uint.");
+    return name;
+  }
+  // The 2 least significant bits are from pins, so these cannot be programmed.
+  // Hence, the new name should have 0's for those bits, or (equivilently) be
+  // divisable by 4.
+  if (newAddress % 4 != 0) {
+    Serial.println("The new adress was invalid, must be divisable by 4.");
+    return name;
+  }
+
+  uint8_t toWrite;
+  // 7th bit is internally set
+  if (newAddress > 63) {
+    toWrite = newAddress & 0b0111100;
+  } else {
+    toWrite = newAddress | 0b1000000;
+    toWrite &= 0b1111100;
+  }
+  toWrite = toWrite >> 2;
   Serial.print("Before: ");
   Serial.println(newAddress, BIN);
-  Serial.print("Before: ");
+  Serial.print("After: ");
   Serial.println(toWrite, BIN);
-  return 0;
+  Serial.print("Current saved name: ");
+  Serial.println(name, BIN);
+
+  writeRegister8(AS5048_I2C_ADDRESS_REG, toWrite);
+  name = newAddress;
+
+  uint8_t readName = readAddress();
+  Serial.print("Newly read name: ");
+  Serial.println(readName, BIN);
+  Serial.print("new saved name: ");
+  Serial.println(name, BIN);
+  return readName;
 }
 
 #endif
