@@ -29,10 +29,11 @@ class AS5048 {
 
   private:
     uint16_t name, zeroPos;
-    int readAngleRaw(); // returns the angle (from absolutue zero, not set point)
-    int readAngleFromZero(); // reads the angle fromt he set zero position
+    uint16_t readAngleRaw(); // returns the angle (from absolutue zero, not set point)
+    uint16_t readAngleFromZero(); // reads the angle fromt he set zero position
     void programZeroPositionOTP(); // OTP to set the zero position
     uint8_t readRegister8(uint8_t reg); // reads a 8-bit register
+    uint16_t readRegister16(uint8_t reg); // reads a 16-bit regsiter, actually reads a 14-bit one
     void writeRegister8(uint8_t reg, uint8_t value); // writes to a 8-bit register
     int setZeroPosition(bool burn); // sets the zero position, bollean to burn or not
 };

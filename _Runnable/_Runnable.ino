@@ -173,35 +173,35 @@ void loop() {
   int zero, gain, error, name;
   if(encoder_connected) {
     // angleRaw = encoder.getPositionRaw();
-    // angleFromZero = encoder.getPositionFromZero();
-    // gain = encoder.getGainValue();
-    // error = encoder.getErrorByte();
-    // zero = (double)encoder.readZeroPosition()*AS5048_RESOLUTION_FACTOR;
+    angleFromZero = encoder.getPositionFromZero();
+    gain = encoder.getGainValue();
+    error = encoder.getErrorByte();
+    zero = (double)encoder.readZeroPosition()*AS5048_RESOLUTION_FACTOR;
     // Serial.print("The raw value was: ");
     // Serial.println(angleRaw);
-    // Serial.print("The real value was: ");
-    // Serial.println(angleFromZero);
+    Serial.print("The real value was: ");
+    Serial.println(angleFromZero);
     // Serial.print("The error byte was: ");
     // Serial.println(error, BIN);
     // Serial.print("The gain was: ");
     // Serial.println(gain, BIN);
     // Serial.print("The zero position is: ");
     // Serial.println(zero);
-    name = encoder.setAddress(72);
-    Serial.print("The returned address is: ");
-    Serial.println(name);
-    delay(500);
-    Serial.print("The address is: ");
-    Serial.println(encoder.readAddress());
-    delay(3000);
-
-    name = encoder.setAddress(64);
-    Serial.print("The returned address is: ");
-    Serial.println(name);
-    delay(500);
-    Serial.print("The address is: ");
-    Serial.println(encoder.readAddress());
-    delay(3000);
+    // name = encoder.setAddress(72);
+    // Serial.print("The returned address is: ");
+    // Serial.println(name);
+    // delay(500);
+    // Serial.print("The address is: ");
+    // Serial.println(encoder.readAddress());
+    // delay(3000);
+    //
+    // name = encoder.setAddress(64);
+    // Serial.print("The returned address is: ");
+    // Serial.println(name);
+    // delay(500);
+    // Serial.print("The address is: ");
+    // Serial.println(encoder.readAddress());
+    // delay(3000);
     //
     // Serial.print("The zero position is: ");
     // Serial.println(encoder.readZeroPosition()*AS5048_RESOLUTION_FACTOR);

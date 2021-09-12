@@ -26,7 +26,7 @@ bool AS5048::begin(uint8_t newName) {
   Serial.println("The device name will be set to: ");
   Serial.println(newName);
   uint8_t readName = setAddress(newName);
-  
+
   if(readName == newName) {
     Serial.print("The device name has been set to: ");
     Serial.println(newName);
@@ -82,22 +82,24 @@ int AS5048::readZeroPosition() {
   return zeroPos;
 }
 
-int  AS5048::readAngleRaw() {
-  uint8_t magHigh = readRegister8(AS5048_MAG_HIGH_REG);
-  uint8_t magLow = readRegister8(AS5048_MAG_LOW_REG);
-  return (magHigh << 6) + (magLow & 0x3F);
+uint16_t AS5048::readAngleRaw() {
+  // uint8_t magHigh = readRegister8(AS5048_MAG_HIGH_REG);
+  // uint8_t magLow = readRegister8(AS5048_MAG_LOW_REG);
+  uint16_t raw = readRegister16(AS5048_ANG_HIGH_REG);
+  return raw;
 }
 
-int  AS5048::readAngleFromZero() {
-  uint8_t angleHigh = readRegister8(AS5048_ANG_HIGH_REG);
-  uint8_t angleLow = readRegister8(AS5048_ANG_LOW_REG);
-  Serial.print("High Byte: ");
-  Serial.print(angleHigh << 6, BIN);
-  Serial.print(", Low Byte: ");
-  Serial.print(angleLow & 0b00111111, BIN);
-  int angle = (angleHigh << 6) | (angleLow & 0b00111111);
-  Serial.print(", The total: ");
-  Serial.println(angle, BIN);
+uint16_t AS5048::readAngleFromZero() {
+  // uint8_t angleHigh = readRegister8(AS5048_ANG_HIGH_REG);
+  // uint8_t angleLow = readRegister8(AS5048_ANG_LOW_REG);
+  // Serial.print("High Byte: ");
+  // Serial.print(angleHigh << 6, BIN);
+  // Serial.print(", Low Byte: ");
+  // Serial.print(angleLow & 0b00111111, BIN);
+  // int angle = (angleHigh << 6) | (angleLow & 0b00111111);
+  // Serial.print(", The total: ");
+  // Serial.println(angle, BIN);
+  uint16_t angle = readRegister16(AS5048_ANG_HIGH_REG);
   return angle;
 }
 
@@ -112,6 +114,19 @@ uint8_t AS5048::readRegister8(uint8_t reg) {
   return value;
 }
 
+uint16_t AS5048::readRegister16(uint8_t reg) {
+  Wire.beginTransmission(name);
+  Wire.write(reg);
+  Wire.endTransmission(false);
+  Wire.requestFrom(name, 2);
+
+  uint8_t highByte = Wire.read();
+  uint8_t lowByte = Wire.read();
+
+  uint16_t value = ((uint16_t)highByte << 6) | (lowByte & 0b00111111);
+  return value;
+}
+
 void AS5048::writeRegister8(uint8_t reg, uint8_t value) {
   Wire.beginTransmission(name);
   Wire.write(reg);
@@ -120,11 +135,11 @@ void AS5048::writeRegister8(uint8_t reg, uint8_t value) {
 }
 
 double AS5048::getPositionRaw() {
-  return AS5048_RESOLUTION_FACTOR*readAngleRaw();
+  return AS5048_RESOLUTION_FACTOR*((double)readAngleRaw());
 }
 
 double AS5048::getPositionFromZero() {
-  return AS5048_RESOLUTION_FACTOR*readAngleFromZero();
+  return AS5048_RESOLUTION_FACTOR*((double)readAngleFromZero());
 }
 
 uint8_t AS5048::readAddress() {
