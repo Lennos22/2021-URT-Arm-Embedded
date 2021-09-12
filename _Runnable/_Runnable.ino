@@ -116,18 +116,18 @@ void loop() {
     accel = mpu.readAccel();
     gyro = mpu.readGyro();
 
-    Serial.println("Accel:");
-    Serial.print("x = ");
-    Serial.print(accel.x);
-    Serial.print(",y = ");
-    Serial.print(accel.y);
-    Serial.print(",z = ");
-    Serial.println(accel.z);
+    // Serial.println("Accel:");
+    // Serial.print("x = ");
+    // Serial.print(accel.x);
+    // Serial.print(",y = ");
+    // Serial.print(accel.y);
+    // Serial.print(",z = ");
+    // Serial.println(accel.z);
 
 
     servoValue = accel.x*4000 + 6000;
-    Serial.print("The servo setting value is: ");
-    Serial.println(servoValue);
+    // Serial.print("The servo setting value is: ");
+    // Serial.println(servoValue);
     setTargetServo(DEFAULT_SERVO, 0, servoValue);
     //delay(1000);
     //
@@ -142,15 +142,15 @@ void loop() {
     // Serial.print(",z = ");
     // Serial.println(gyro.z);
   }
-  delay(500);
-  // sensor.read();
-  //
-  // Serial.print("range: ");
-  // Serial.print(sensor.ranging_data.range_mm);
+  delay(100);
+  sensor.read();
+
+  Serial.print("range: ");
+  Serial.println(sensor.ranging_data.range_mm);
   // Serial.print("\tstatus: ");
   // Serial.println(VL53L1X::rangeStatusToString(sensor.ranging_data.range_status));
-  //
+
   // servoValue = (sensor.ranging_data.range_mm, 0, 3000, 2000, 10000);
   // setTargetServo(DEFAULT_SERVO, 0, servoValue);
-  // delay(2000);
+  delay(50);
 }
