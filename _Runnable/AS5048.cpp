@@ -85,6 +85,7 @@ int AS5048::readZeroPosition() {
   uint8_t angleHigh = readRegister8(AS5048_ZERO_POS_HIGH_REG);
   uint8_t angleLow = readRegister8(AS5048_ZERO_POS_LOW_REG);
   zeroPos = (angleHigh << 6) + (angleLow & 0x3F);
+  return zeroPos;
 }
 
 int  AS5048::readAngleRaw() {
@@ -96,7 +97,14 @@ int  AS5048::readAngleRaw() {
 int  AS5048::readAngleFromZero() {
   uint8_t angleHigh = readRegister8(AS5048_ANG_HIGH_REG);
   uint8_t angleLow = readRegister8(AS5048_ANG_LOW_REG);
-  return (angleHigh << 6) + (angleLow & 0x3F);
+  Serial.print("High Byte: ");
+  Serial.print(angleHigh << 6, BIN);
+  Serial.print(", Low Byte: ");
+  Serial.print(angleLow & 0b00111111, BIN);
+  int angle = (angleHigh << 6) | (angleLow & 0b00111111);
+  Serial.print(", The total: ");
+  Serial.println(angle, BIN);
+  return angle;
 }
 
 uint8_t AS5048::readRegister8(uint8_t reg) {
@@ -116,4 +124,37 @@ void AS5048::writeRegister8(uint8_t reg, uint8_t value) {
   Wire.write(value);
   Wire.endTransmission(true);
 }
+
+double AS5048::getPositionRaw() {
+  return AS5048_RESOLUTION_FACTOR*readAngleRaw();
+}
+
+double AS5048::getPositionFromZero() {
+  return AS5048_RESOLUTION_FACTOR*readAngleFromZero();
+}
+
+uint8_t AS5048::readAddress() {
+  uint8_t address = readRegister8(AS5048_I2C_ADDRESS_REG);
+  return (address << 2)|(0b1000000);
+}
+
+uint8_t AS5048::getErrorByte() {
+  uint8_t error = readRegister8(AS5048_DIAG_REG);
+  return error &= 0b00001111;
+}
+
+uint8_t AS5048::getGainValue() {
+  return readRegister8(AS5048_AUTO_GAIN_REG);
+}
+
+uint8_t AS5048::setAddress(uint8_t newAddress) {
+  uint8_t toWrite = newAddress | 0b0111111;
+  toWrite >> 2;
+  Serial.print("Before: ");
+  Serial.println(newAddress, BIN);
+  Serial.print("Before: ");
+  Serial.println(toWrite, BIN);
+  return 0;
+}
+
 #endif
