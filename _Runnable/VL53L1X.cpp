@@ -3,6 +3,8 @@
 // or paraphrased from the API source code, API user manual (UM2356), and
 // VL53L1X datasheet.
 
+// This is a set of functions for the distance sensor VL53L1X
+
 #include "VL53L1X.h"
 
 // Constructors ////////////////////////////////////////////////////////////////

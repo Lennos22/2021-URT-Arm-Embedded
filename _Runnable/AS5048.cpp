@@ -1,3 +1,5 @@
+//Angle Sensor
+
 #ifndef AS5048_CPP
 #define AS5048_CPP
 
