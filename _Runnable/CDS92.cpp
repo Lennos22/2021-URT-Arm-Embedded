@@ -1,8 +1,8 @@
-#ifndef CPP_CDS92TIMERS
-#define CPP_CDS92TIMERS
+#ifndef CPP_CDS92
+#define CPP_CDS92
 
 #include "runnable.h"
-#include "CDS92Timers.h"
+#include "CDS92.h"
 
 
 /*
@@ -11,6 +11,39 @@ controller and providing external functions for changing the frequency, enable,
 and other low level functions.
 */
 
+void setup_CDS(){
+  setup_CDSTimer();
+  disableAllTimers();
+
+  setup_CDS_SPI();
+
+  //setup fault input pins
+  pinMode(CDS_FAULT_1, INPUT);
+  pinMode(CDS_FAULT_2, INPUT);
+  pinMode(CDS_FAULT_3, INPUT);
+
+
+
+  //write initial values and initialise registers
+  digitalWrite(SPI_SS, LOW);
+  delay(200);
+  SPI.transfer16(CDS_MSG_EMPTY);
+  delay(200);
+  digitalWrite(SPI_SS, HIGH);
+  //enable voltage level converters
+  pinMode(V_LEVEL_OE, OUTPUT);
+  digitalWrite(V_LEVEL_OE, HIGH);
+  //enable output of shift registers
+  enableRegisters();
+}
+
+void setup_CDS_SPI(){
+  SPI.begin();
+  SPI.beginTransaction(SPISettings(5000, LSBFIRST, SPI_MODE0));
+  pinMode(SPI_SS, OUTPUT);
+  pinMode(SPI_OE, OUTPUT);
+  digitalWrite(SPI_OE, HIGH);
+}
 
 void setup_CDSTimer()
 {
@@ -92,12 +125,7 @@ void setup_CDSTimer()
 
 }
 
-void setup_CDS_SPI(){
-  SPI.begin();
-  SPI.beginTransaction(SPISettings(10000, MSBFIRST, SPI_MODE0));
-  pinMode(SPI_SS, OUTPUT);
-  digitalWrite(SPI_SS, HIGH);
-}
+
 
 status_t writeFrequency(uint8_t timer, double frequency){
   uint16_t CC0_val = FREQ_CONVERSION/frequency;
@@ -135,7 +163,7 @@ status_t writeFrequency(uint8_t timer, double frequency){
   return SUCCESS;
 }
 
-
+//enabling a timer turns on the output
 void enableTimer(uint8_t timer){
   switch (timer){
     case 0:
@@ -165,6 +193,7 @@ void enableAllTimers(){
   enableTimer(2);
 }
 
+//disabling a timer stops the output
 void disableTimer(uint8_t timer){
   switch (timer){
     case 0:
@@ -210,15 +239,14 @@ float readFrequency(uint8_t timer){
   return FREQ_CONVERSION/(float)registervalue;
 }
 
-void timer1kztest(){
-  //test2
-  disableAllTimers();
-  writeFrequency(0, 3.0);
-  enableAllTimers();
-  delay(500);
-  writeFrequency(1, 5.0); //TIMER 2 ACTIVATES HERE
-  writeFrequency(2, 0.5); //TIMER 2 ACTIVATES HERE
+void enableRegisters(){
+  digitalWrite(SPI_OE, LOW);
 }
+
+void disableRegisters(){
+  digitalWrite(SPI_OE, HIGH);
+}
+
 
 void SPItest(){
   for(int i =0; i<10; i++ ){
@@ -235,6 +263,18 @@ void SPItest(){
     digitalWrite(SPI_SS, HIGH);
     delay(1000);
   }
+}
+
+void CDSEnableControllers(){
+  digitalWrite(SPI_SS, LOW);
+  SPI.transfer16(CDS1_EN|CDS2_EN|CDS3_EN);
+  digitalWrite(SPI_SS, HIGH);
+}
+
+void CDSDisableControllers(){
+  digitalWrite(SPI_SS, LOW);
+  SPI.transfer16(CDS_MSG_EMPTY);
+  digitalWrite(SPI_SS, HIGH);
 }
 
 #endif

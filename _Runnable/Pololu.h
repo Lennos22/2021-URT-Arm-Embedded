@@ -120,56 +120,72 @@ void SERCOM4_3_Handler();
 
 //Initialises the Serial Connection
 void setup_PololuUart();
+
 // Set up the simple motor controllers
 void setup_PololuSMC(int* deviceNumbers, int numberDevices);
+
 // Exits saft start mode on the device indicated by device number
 void exitSafeStartSMC(unsigned char deviceNumber);
+
 // Exits safe start for all of the devices in deviceNumbers
 void exitSafeStartAllSMC(int *deviceNumbers, int numberDevices);
+
 // Sets the serial communication speed in the simple motor controller
 void setPolSerialSpeedAll();
+
 // Reads a byte from the SerialPol, returns -1 if nothing read
 int readByteAll();
+
 // Sets the motor speed of device indicated. The speed value is a int with it's
 // value between -3200 and 3200. With -3200 being full speed reverse, 3200 being
 // full speed forward, and 0 being stopped.
 void setMotorSpeedSMC(int deviceNumber, int speed);
+
 // Sets the breaks of motor indicated. The amount is between 0 and 32, with 0 being
 // a full coast and 32 being full break.
 void setMotorBreakSMC(int deviceNumber, int amount);
+
 // Stops the motor indicated. This does two things: sets the target speed to 0,
 // thereby stopping the motor (respecting set decceleration limits) and puts the
 // device into Safe-Start mode if that is enabled.
 void stopMotorSMC(int deviceNumber);
+
 // Sets limits for the device indicated's motor parameters. See the Motor Limit IDs
 // section of Polou.h for the different ID's and potential values. Returns a integer
 // to signify the sucess: 0 for all good, 1 for unable to set a forward param because
 // of a hard motor limit, 2 for a reverse hard motor limit, and 3 for a forward and
 // reverse hard motor limit.
 unsigned char setMotorLimitSMC(int deviceNumber, unsigned char limitID, unsigned int limitValue);
+
 // Requests the a variable from teh specified motor. See the Variable IDs
 // section of Polou.h for the different ID's and potential values.
 unsigned int getVariableSMC(int deviceNumber, unsigned char variableID);
+
 // Prints the current status information of the named device.
 void printStatusInformationSMC(int deviceNumber);
+
 // As these will all be in servo mode, the target represents the pulse width to
 // transmit in units of quarter-microseconds. A target value of 0 tells the Maestro
 // to stop sending pulses to the servo.
 void setTargetServo(int deviceNumber, int channelNumber, int target);
+
 // Limits the speed at which the specified servo and channel's output can change.
 // This is in units of 0.25 microseconds per 10 milliseconds - eg 140 means 3.5
 // microsecond per millisecond. 0 means no limit. Default has this set with a
 // minimum pulse width of 992 microseconds and a max of 2000 microseconds (So,
 // between 3968 and 8000 in our units), but this can be changes in the app thingy.
 void setSpeedLimitServo(int deviceNumber, int channelNumber, uint16_t speed);
+
 // Limits the accelration of servo's output channel. Again, 0 means no limit. The
 // units are (0.25 microseconds)/(10 milliseconds)/(80 milliseconds). This is a
 // value between 0 and 255.
 void setAccLimitServo(int deviceNumber, int channelNumber, uint16_t accel);
+
 // Gets the positions from a specified channel. When the channel is configured
 // to servo mode this is the current pulse width on the channel. Note that the
 // units here are again in 0.25 microseconds.
 unsigned int getPositionServo(int deviceNumber, int channelNumber);
+
 /** Gets the errors from the servo named. The bits represent the following:
 0 - Serial Signal Error
 1 - Serial Overrun Error
@@ -182,4 +198,68 @@ unsigned int getPositionServo(int deviceNumber, int channelNumber);
 8 - Script Program Counter Error
 */
 unsigned int getErrorsServo(int deviceNumber);
+
+// This can be copied to the runnable loop to printout variables from the SMC
+/** Serial.print("The temperature is: ");
+Serial.println(getVariable(DEFAULT_NAME, TEMPERATURE));
+Serial.print("The input voltage is: ");
+Serial.println(getVariable(DEFAULT_NAME, INPUT_VOLTAGE));
+delay(500);
+setMotorLimit(DEFAULT_NAME, BOTH_DIRECT_SPEED, 3200/2);
+Serial.print("The motor speed limit is: ");
+Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
+delay(500);
+setMotorLimit(DEFAULT_NAME, FORWARD_SPEED, 3200);
+Serial.print("The forward motor speed limit is: ");
+Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
+delay(500);
+setMotorLimit(DEFAULT_NAME, BACKWARD_SPEED, 3200/4);
+Serial.print("The backward motor speed limit is: ");
+Serial.println(getVariable(DEFAULT_NAME, MAX_BACKWARD_SPEED));
+delay(500); */
+
+// Copy into the runnable loop for 45 degree increments fror the servo
+/**
+Serial.println();
+Serial.print("The current error message is: ");
+Serial.println(getErrorsServo(DEFAULT_SERVO));
+setTargetServo(DEFAULT_SERVO, 1, 2000);
+delay(20);
+Serial.print("The target speed of channel 0 is: ");
+Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+delay(2000);
+setTargetServo(DEFAULT_SERVO, 1, 2000);
+delay(20);
+Serial.print("The target speed of channel 1 is: ");
+Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+setTargetServo(DEFAULT_SERVO, 1, 3333);
+delay(20);
+Serial.print("The target speed of channel 1 is: ");
+Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+delay(2000);
+setTargetServo(DEFAULT_SERVO, 1, 4667);
+delay(20);
+Serial.print("The target speed of channel 1 is: ");
+Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+delay(2000);
+setTargetServo(DEFAULT_SERVO, 1, 6000);
+delay(20);
+Serial.print("The target speed of channel 1 is: ");
+Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+delay(2000);
+setTargetServo(DEFAULT_SERVO, 1, 7333);
+delay(20);
+Serial.print("The target speed of channel 1 is: ");
+Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+delay(2000);
+setTargetServo(DEFAULT_SERVO, 1, 8667);
+delay(20);
+Serial.print("The target speed of channel 1 is: ");
+Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+delay(2000);
+setTargetServo(DEFAULT_SERVO, 1, 10000);
+delay(20);
+Serial.print("The target speed of channel 1 is: ");
+Serial.println(getPositionServo(DEFAULT_SERVO, 1));
+delay(2000); */
 #endif

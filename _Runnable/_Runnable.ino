@@ -1,138 +1,158 @@
 #include "runnable.h"
 #include "Pololu.h"
-#include "CDS92Timers.h"
+#include "CDS92.h"
 #include "PiSerial.h"
+#include "MPU6050.h"
+#include "AS5048.h"
+#include <Wire.h>
 
-uint8_t testmessage[3];
+
+MPU6050 mpu;
+bool mpu_active = false;
+
+VL53L1X sensor;
+
+AS5048 encoder;
+
+void setup() {
+
+  if(SERIALMONITER) setup_USBserial();
+
+  if(CDS_CONNECTED){
+    if(DEBUG) Serial.println("CDS Setup Starting");
+    setup_CDS();
+    if(DEBUG) Serial.println("CDS Setup Finished");
+  }
+
+  if(MPU_CONNECTED) setup_MPU();
+
+  if(I2C_CONNECTED){
+    Wire.begin();
+    Wire.setClock(400000); // use 400 kHz I2C
+  }
+  if(ENCODER_CONNECTED) test_Encoder();
+
+  if(POLOLU_CONNECTED){
+    int pololouSMC_names[1] = {DEFAULT_SMC};
+    int pololouServo_names[1] = {DEFAULT_SERVO};
+
+    setup_PololuUart();
+    setup_PololuSMC(pololouSMC_names, 0);
+  }
+}
+
+void loop() {
+  CDSEnableControllers();
+  delay(2000);
+  CDSDisableControllers();
+  delay(2000); 
+}
+
 
 void setup_USBserial(){
   Serial.begin(9600);
-  while (!Serial);
   delay(500);
   Serial.println("Serial Connected");
 }
 
-void setup() {
-<<<<<<< _Runnable/_Runnable.ino
-  setup_CDSTimer();
-  setup_CDS_SPI();
-=======
-  //setup_TCC();
-  int pololouSMC_names[1] = {DEFAULT_SMC};
-  int pololouServo_names[1] = {DEFAULT_SERVO};
-
->>>>>>> _Runnable/_Runnable.ino
-  setup_PololuUart();
-  //setup_PololuSMC(pololouSMC_names, 1);
-  //setup_encoder();
-  if(SERIALMONITER) setup_USBserial();
-  timer1kztest();
-  SPItest();
+void test_Encoder(){
+  bool encoder_connected = false;
+  if(!encoder.begin()) {
+    Serial.println("The encoder failed to connect properly");
+  } else {
+    Serial.println("The encoder was connected");
+    encoder_connected = true;
+    delay(100);
+    Serial.print("The zero position is: ");
+    Serial.println(encoder.readZeroPosition()*AS5048_RESOLUTION_FACTOR);
+    Serial.print("The address is: ");
+    Serial.println(encoder.readAddress());
+  }
+  double angleRaw, angleFromZero;
+  int zero, gain, error, name;
+  if(encoder_connected) {
+    // angleRaw = encoder.getPositionRaw();
+    angleFromZero = encoder.getPositionFromZero();
+    gain = encoder.getGainValue();
+    error = encoder.getErrorByte();
+    zero = (double)encoder.readZeroPosition()*AS5048_RESOLUTION_FACTOR;
+    // Serial.print("The raw value was: ");
+    // Serial.println(angleRaw);
+    Serial.print("The real value was: ");
+    Serial.println(angleFromZero);
+    // Serial.print("The error byte was: ");
+    // Serial.println(error, BIN);
+    // Serial.print("The gain was: ");
+    // Serial.println(gain, BIN);
+    // Serial.print("The zero position is: ");
+    // Serial.println(zero);
+    // name = encoder.setAddress(72);
+    // Serial.print("The returned address is: ");
+    // Serial.println(name);
+    // delay(500);
+    // Serial.print("The address is: ");
+    // Serial.println(encoder.readAddress());
+    // delay(3000);
+    //
+    // name = encoder.setAddress(64);
+    // Serial.print("The returned address is: ");
+    // Serial.println(name);
+    // delay(500);
+    // Serial.print("The address is: ");
+    // Serial.println(encoder.readAddress());
+    // delay(3000);
+    //
+    // Serial.print("The zero position is: ");
+    // Serial.println(encoder.readZeroPosition()*AS5048_RESOLUTION_FACTOR);
+  }
 }
 
-
-
-void loop() {
-
-  if(SERIALMONITER){
-    if (SerialPol.available() > 0) {
-      delay(100);
-      Serial.print(" -> 0x");
-      size_t readsize = SerialPol.available();
-      size_t i;
-      for(i = 0; i<readsize; i = i+1){
-        Serial.print(SerialPol.read(), HEX);
-      }
-      Serial.println();
-    }
+void setup_MPU(){
+  mpu = MPU6050();
+  if(mpu.begin(PM_2_G, PM_250_DEG_SEC, MAX_260_HZ)) {
+    Serial.println("MPU Connected.");
+    mpu_active = true;
+  } else {
+    Serial.println("MPU failed to connect.");
   }
-<<<<<<< _Runnable/_Runnable.ino
+  /** Serial.println("past I2C setup");
+  Serial.print("The MPU accleration range is: ");
+  Serial.println(MPU.getAccRange());
+  Serial.print("The MPU gyro scale is: ");
+  Serial.print(MPU.getGyroScale());*/
+}
 
-=======
-  /**
-  if(SENDSERIAL){
-    SerialPol.write(testmessage, 3);
-    SerialPol.flush();
-    delay(2000);
+void print_MPU(){
+  if(mpu_active) {
+    Vector accel, gyro;
+    accel = mpu.readAccel();
+    gyro = mpu.readGyro();
+
+    Serial.println("Accel:");
+    Serial.print("x = ");
+    Serial.print(accel.x);
+    Serial.print(",y = ");
+    Serial.print(accel.y);
+    Serial.print(",z = ");
+    Serial.println(accel.z);
+
+    //the following code moves the servo
+    //int servoValue = 0;
+    //servoValue = accel.x*4000 + 6000;
+    //Serial.print("The servo setting value is: ");
+    //Serial.println(servoValue);
+    //setTargetServo(DEFAULT_SERVO, 0, servoValue);
+    //delay(1000);
+
+    Serial.print("The temperature is: ");
+    Serial.println(mpu.readTemp());
+
+    Serial.println("Gyro:");
+    Serial.print("x = ");
+    Serial.print(gyro.x);
+    Serial.print(",y = ");
+    Serial.print(gyro.y);
+    Serial.print(",z = ");
+    Serial.println(gyro.z);
   }
->>>>>>> _Runnable/_Runnable.ino
-  delay(100);
-  **/
-  // put your main code here, to run repeatedly:
-
-  // CYCLICAL 100Hz or higher
-  // Read Encoders - calculate vel
-  // If needed - Calculate PID and Apply Commands
-
-  // ON SERIAL REPORT_DATA_CMD
-  // Current Position and Velocity of 6 motors
-  // Current Acceletomoeter Data via
-
-  // ON SERIAL MOTOR_CMD
-  // Write to CDS SPI
-  // Change CDS Frequencies
-  // Write to Pololu Uart
-  /** Serial.print("The temperature is: ");
-  Serial.println(getVariable(DEFAULT_NAME, TEMPERATURE));
-  Serial.print("The input voltage is: ");
-  Serial.println(getVariable(DEFAULT_NAME, INPUT_VOLTAGE));
-  delay(500);
-  setMotorLimit(DEFAULT_NAME, BOTH_DIRECT_SPEED, 3200/2);
-  Serial.print("The motor speed limit is: ");
-  Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
-  delay(500);
-  setMotorLimit(DEFAULT_NAME, FORWARD_SPEED, 3200);
-  Serial.print("The forward motor speed limit is: ");
-  Serial.println(getVariable(DEFAULT_NAME, MAX_FORWARD_SPEED));
-  delay(500);
-  setMotorLimit(DEFAULT_NAME, BACKWARD_SPEED, 3200/4);
-  Serial.print("The backward motor speed limit is: ");
-  Serial.println(getVariable(DEFAULT_NAME, MAX_BACKWARD_SPEED));
-  delay(500); */
-  Serial.println();
-  Serial.print("The current error message is: ");
-  Serial.println(getErrorsServo(DEFAULT_SERVO));
-
-
-  setTargetServo(DEFAULT_SERVO, 1, 2000);
-  delay(20);
-  Serial.print("The target speed of channel 0 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 2000);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  setTargetServo(DEFAULT_SERVO, 1, 3333);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 4667);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 6000);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 7333);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 8667);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-  setTargetServo(DEFAULT_SERVO, 1, 10000);
-  delay(20);
-  Serial.print("The target speed of channel 1 is: ");
-  Serial.println(getPositionServo(DEFAULT_SERVO, 1));
-  delay(2000);
-
-
 }
