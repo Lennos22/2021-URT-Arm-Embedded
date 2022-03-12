@@ -15,7 +15,7 @@
 #define MPU_CONNECTED     false
 #define ENCODER_CONNECTED false
 #define CDS_CONNECTED     true
-#define POLOLU_CONNECTED  false
+#define POLOLU_CONNECTED  true
 #define I2C_CONNECTED     false
 
 

@@ -125,7 +125,7 @@ void setup_PololuUart();
 void setup_PololuSMC(int* deviceNumbers, int numberDevices);
 
 // Exits saft start mode on the device indicated by device number
-void exitSafeStartSMC(unsigned char deviceNumber);
+void exitSafeStartSMC(int deviceNumber);
 
 // Exits safe start for all of the devices in deviceNumbers
 void exitSafeStartAllSMC(int *deviceNumbers, int numberDevices);
@@ -135,6 +135,8 @@ void setPolSerialSpeedAll();
 
 // Reads a byte from the SerialPol, returns -1 if nothing read
 int readByteAll();
+
+unsigned int getVariable(unsigned char variableID);
 
 // Sets the motor speed of device indicated. The speed value is a int with it's
 // value between -3200 and 3200. With -3200 being full speed reverse, 3200 being

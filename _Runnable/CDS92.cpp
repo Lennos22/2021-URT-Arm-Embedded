@@ -4,6 +4,16 @@
 #include "runnable.h"
 #include "CDS92.h"
 
+/*
+ * Function prototypes used for internal auxillary functions.
+ */
+void CDSSetDirectionHigh(int controller);
+void CDSSetDirectionLow(int controller);
+
+/*
+ * Stores the bits that are currently in the shift register.
+ */
+int registerVal = CDS_MSG_EMPTY;
 
 /*
 This function is to setup the Internal Timers for interfacing with the CDS
@@ -35,6 +45,12 @@ void setup_CDS(){
   digitalWrite(V_LEVEL_OE, HIGH);
   //enable output of shift registers
   enableRegisters();
+
+  //Default settings
+  writeFrequency(0, DEFAULT_FREQ);
+  writeFrequency(1, DEFAULT_FREQ);
+  writeFrequency(2, DEFAULT_FREQ);
+  CDSDisableControllers();
 }
 
 void setup_CDS_SPI(){
@@ -125,12 +141,24 @@ void setup_CDSTimer()
 
 }
 
-
-
+/*
+ * Sets the frequency of the timer for the specified controller.
+ */
 status_t writeFrequency(uint8_t timer, double frequency){
-  uint16_t CC0_val = FREQ_CONVERSION/frequency;
+  uint16_t CC0_val = FREQ_CONVERSION/abs(frequency);
 
+  Serial.print("Setting frequency of timer ");
+  Serial.print(timer+1);
+  Serial.print(" to ");
+  Serial.println(frequency);
+  
   if(CC0_val > MAXVAL16INT) return FAILURE;
+
+  if (frequency < 0) {
+    CDSSetDirectionHigh(timer);
+  } else {
+    CDSSetDirectionLow(timer);
+  }
 
   switch (timer){
     case 0:
@@ -163,8 +191,12 @@ status_t writeFrequency(uint8_t timer, double frequency){
   return SUCCESS;
 }
 
-//enabling a timer turns on the output
+/*
+ * Enables the timer for the specified controller.
+ */
 void enableTimer(uint8_t timer){
+  Serial.print("Enabling timer ");
+  Serial.println(timer+1);
   switch (timer){
     case 0:
       TCC0->CTRLA.bit.ENABLE = 1;                        // Enable timer TCC0
@@ -187,14 +219,22 @@ void enableTimer(uint8_t timer){
   return;
 }
 
+/*
+ * Enables all timers registered on the Feather M4.
+ */
 void enableAllTimers(){
+  Serial.println("Enabling all timers");
   enableTimer(0);
   enableTimer(1);
   enableTimer(2);
 }
 
-//disabling a timer stops the output
+/*
+ * Disables the timer for the specified controller.
+ */
 void disableTimer(uint8_t timer){
+  Serial.print("Disabling timer ");
+  Serial.println(timer+1);
   switch (timer){
     case 0:
       TCC0->CTRLA.bit.ENABLE = 0;                        // Enable timer TCC0
@@ -214,7 +254,11 @@ void disableTimer(uint8_t timer){
   return;
 }
 
+/*
+ * Disables all timers registered on the Feather M4.
+ */
 void disableAllTimers(){
+  Serial.println("Disabling all timers");
   disableTimer(0);
   disableTimer(1);
   disableTimer(2);
@@ -265,15 +309,157 @@ void SPItest(){
   }
 }
 
-void CDSEnableControllers(){
+/*
+ * Enables the controller specified by controller.
+ */
+void CDSEnableController(int controller) {
+  Serial.print("Enabling controller ");
+  Serial.println(controller+1);
   digitalWrite(SPI_SS, LOW);
-  SPI.transfer16(CDS1_EN|CDS2_EN|CDS3_EN);
+  switch (controller) {
+    case 0:
+      SPI.transfer16(registerVal |= CDS1_EN);
+      break;
+    case 1:
+      SPI.transfer16(registerVal |= CDS2_EN);
+      break;
+    case 2:
+      SPI.transfer16(registerVal |= CDS3_EN);
+      break;
+  }
   digitalWrite(SPI_SS, HIGH);
 }
 
-void CDSDisableControllers(){
+/*
+ * Enables all controllers connected to the Feather M4.
+ */
+void CDSEnableControllers(){
+  Serial.println("Enabling all controllers");
   digitalWrite(SPI_SS, LOW);
-  SPI.transfer16(CDS_MSG_EMPTY);
+  SPI.transfer16(registerVal |= (CDS1_EN|CDS2_EN|CDS3_EN));
+  digitalWrite(SPI_SS, HIGH);
+}
+
+/*
+ * Disables the controller specified by controller.
+ */
+void CDSDisableController(int controller) {
+  Serial.print("Disabling controller ");
+  Serial.println(controller+1);
+  digitalWrite(SPI_SS, LOW);
+  switch (controller) {
+    case 0:
+      SPI.transfer16(registerVal &= ~CDS1_EN);
+      break;
+    case 1:
+      SPI.transfer16(registerVal &= ~CDS2_EN);
+      break;
+    case 2:
+      SPI.transfer16(registerVal &= ~CDS3_EN);
+      break;
+  }
+  digitalWrite(SPI_SS, HIGH);
+}
+
+/*
+ * Disables all controllers connected to the Feather M4.
+ */
+void CDSDisableControllers(){
+  Serial.println("Disabling all controllers");
+  digitalWrite(SPI_SS, LOW);
+  SPI.transfer16(registerVal = CDS_MSG_EMPTY);
+  digitalWrite(SPI_SS, HIGH);
+}
+
+/*
+ * Sets the X4 pin of the specified controller
+ * to high.
+ */
+void CDSSetX4High(int controller) {
+  Serial.print("Setting X4 pin of controller ");
+  Serial.print(controller+1);
+  Serial.println(" to high");
+  digitalWrite(SPI_SS, LOW);
+  switch (controller) {
+    case 0:
+      SPI.transfer16(registerVal |= CDS1_X4);
+      break;
+    case 1:
+      SPI.transfer16(registerVal |= CDS2_X4);
+      break;
+    case 2:
+      SPI.transfer16(registerVal |= CDS3_X4);
+      break;
+  }
+  digitalWrite(SPI_SS, HIGH);
+}
+
+/*
+ * Sets the X4 pin of the specified CDS controller
+ * to low.
+ */
+void CDSSetX4Low(int controller) {
+  Serial.print("Setting X4 pin of controller ");
+  Serial.print(controller+1);
+  Serial.println(" to low");
+  digitalWrite(SPI_SS, LOW);
+  switch (controller) {
+    case 0:
+      SPI.transfer16(registerVal &= ~CDS1_X4);
+      break;
+    case 1:
+      SPI.transfer16(registerVal &= ~CDS2_X4);
+      break;
+    case 2:
+      SPI.transfer16(registerVal &= ~CDS3_X4);
+      break;
+  }
+  digitalWrite(SPI_SS, HIGH);
+}
+
+/*
+ * Sets direction pin of the specified controller
+ * to high.
+ */
+void CDSSetDirectionHigh(int controller) {
+  Serial.print("Setting direction pin of controller ");
+  Serial.print(controller+1);
+  Serial.println(" to high");
+  digitalWrite(SPI_SS, LOW);
+  switch (controller) {
+    case 0:
+      SPI.transfer16(registerVal |= CDS1_DIR);
+      break;
+    case 1:
+      SPI.transfer16(registerVal |= CDS2_DIR);
+      break;
+    case 2:
+      SPI.transfer16(registerVal |= CDS3_DIR);
+      break;
+  }
+  digitalWrite(SPI_SS, HIGH);
+}
+
+/*
+ * Sets the direction pin of the specified controller
+ * to low.
+ */
+void CDSSetDirectionLow(int controller) {
+  Serial.print("Setting direction pin of controller ");
+  Serial.print(controller+1);
+  Serial.println(" to low");
+  digitalWrite(SPI_SS, LOW);
+  switch (controller) {
+    case 0:
+      SPI.transfer16(registerVal &= ~CDS1_DIR);
+      break;
+    case 1:
+      SPI.transfer16(registerVal &= ~CDS2_DIR);
+      break;
+    case 2:
+      SPI.transfer16(registerVal &= ~CDS3_DIR);
+      break;
+  }
   digitalWrite(SPI_SS, HIGH);
 }
 

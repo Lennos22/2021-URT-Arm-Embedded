@@ -15,13 +15,12 @@ VL53L1X sensor;
 AS5048 encoder;
 
 void setup() {
-
   if(SERIALMONITER) setup_USBserial();
 
   if(CDS_CONNECTED){
-    if(DEBUG) Serial.println("CDS Setup Starting");
+    if (DEBUG) Serial.println("CDS Setup Starting");
     setup_CDS();
-    if(DEBUG) Serial.println("CDS Setup Finished");
+    if (DEBUG) Serial.println("CDS Setup Finished");
   }
 
   if(MPU_CONNECTED) setup_MPU();
@@ -33,25 +32,61 @@ void setup() {
   if(ENCODER_CONNECTED) test_Encoder();
 
   if(POLOLU_CONNECTED){
-    int pololouSMC_names[1] = {DEFAULT_SMC};
+    if (DEBUG) Serial.println("Pololu devices connected. Setting up devices...");
+    int pololouSMC_names[3] = {DEFAULT_SMC, 14, 15};
     int pololouServo_names[1] = {DEFAULT_SERVO};
 
     setup_PololuUart();
-    setup_PololuSMC(pololouSMC_names, 0);
+    setup_PololuSMC(pololouSMC_names, 3);
+    if (DEBUG) Serial.println("Pololu devices set up!");
   }
 }
 
 void loop() {
-  CDSEnableControllers();
+  CDSDiagnostic();
+  delay(5000);
+}
+
+void pololuDiagnostic() {
+  setMotorSpeedSMC(13, 3200);
+  delay(5000);
+  setMotorSpeedSMC(14, 3200);
+  delay(5000);
+  setMotorSpeedSMC(15, 3200);
+  delay(5000);
+  setTargetServo(12, 0, 992*4);
   delay(2000);
+  setTargetServo(12, 0, 2000*4);
+  delay(2000);
+  setTargetServo(12, 0, 1500*4);
+}
+
+void CDSDiagnostic() {
+  int speed = 1000;
+  CDSEnableControllers();
+  for (int i = 0; i < 3; i++) {
+    writeFrequency(i, speed);
+    enableTimer(i);
+    delay(5000);
+    CDSSetX4High(i);
+    delay(5000);
+    CDSSetX4Low(i);
+    delay(5000);
+    writeFrequency(i, -speed);
+    delay(5000);
+    CDSSetX4High(i);
+    delay(5000);
+    CDSSetX4Low(i);
+    delay(5000);
+    disableTimer(i);
+  }
   CDSDisableControllers();
-  delay(2000); 
 }
 
 
 void setup_USBserial(){
   Serial.begin(9600);
-  delay(500);
+  while(!Serial);
   Serial.println("Serial Connected");
 }
 

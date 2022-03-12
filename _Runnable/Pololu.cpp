@@ -60,7 +60,7 @@ void exitSafeStartAllSMC(int *deviceNumbers, int numberDevices) {
 }
 
 // Exits saft start mode on the device indicated by device number
-void exitSafeStartSMC(unsigned char deviceNumber) {
+void exitSafeStartSMC(int deviceNumber) {
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
   SerialPol.write(0x03);
@@ -77,6 +77,10 @@ int readByteAll() {
 // value between -3200 and 3200. With -3200 being full speed reverse, 3200 being
 // full speed forward, and 0 being stopped.
 void setMotorSpeedSMC(int deviceNumber, int speed) {
+  Serial.print("Setting motor ");
+  Serial.print(deviceNumber);
+  Serial.print(" to speed ");
+  Serial.println(speed);
   if(speed<-3200 || speed>3200) return;
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
@@ -86,8 +90,8 @@ void setMotorSpeedSMC(int deviceNumber, int speed) {
   } else {
     SerialPol.write(0x05); // Forward motor direction
   }
-  SerialPol.write((speed & 0xF1));
-  SerialPol.write((speed >> 5) & 0x7F);
+  SerialPol.write((speed & 0x1F));
+  SerialPol.write((speed >> 5) /*& 0x7F*/);
 }
 
 // Sets the breaks of motor indicated. The amount is between 0 and 32, with 0 being
@@ -124,7 +128,7 @@ unsigned char setMotorLimitSMC(int deviceNumber, unsigned char limitID, unsigned
 }
 
 // Requests the a variable from the specified motor. See the Variable IDs
-// section of Polou.h for the different ID's and potential values.
+// section of Pololu.h for the different ID's and potential values.
 unsigned int getVariableSMC(int deviceNumber, unsigned char variableID) {
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
@@ -148,6 +152,10 @@ void printStatusInformationSMC(int deviceNumber) {
 // to stop sending pulses to the servo.
 void setTargetServo(int deviceNumber, int channelNumber, int target) {
   if(target < 0) return;
+  Serial.print("Setting Servo motor ");
+  Serial.print(deviceNumber);
+  Serial.print(" to target ");
+  Serial.println(target);
   SerialPol.write(0xAA);
   SerialPol.write(deviceNumber);
   SerialPol.write(0x04);
